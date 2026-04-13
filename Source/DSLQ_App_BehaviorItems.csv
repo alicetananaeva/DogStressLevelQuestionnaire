@@ -1,0 +1,38 @@
+question_number,short_label,question_text,response_type,followup_block,include_in_primary_score,notes
+1,Stereotypic,"My dog has engaged in stereotypic (repetitive) movements for 10 minutes or more at a time. For example, chasing their own tail, pacing back and forth or wandering in circles, excessive licking or sucking on toys or other objects (outside of play), excessive grooming that leaves wounds on skin, or something similar.",symptom_block,yes_no_then_f_fw_l,yes,Scored with Main + f + f-w + l logic.
+2,Panting,My dog breathes heavily (panting) at times that seem unrelated to exertion/exercise or hot weather.,symptom_block,yes_no_then_f_fw_l,yes,Scored with Main + f + f-w + l logic.
+3,Play with Familiar Humans,"My dog engages in social play or other positive interactions with most familiar humans without signs of anxiety, fear or aggression.",binary_protective,yes_no_only,yes,Protective / positive item. Converted to 0/1 score in existing scoring pipeline.
+4,Trembling,My dog trembles or appears to have over-tight muscles.,symptom_block,yes_no_then_f_fw_l,yes,Scored with Main + f + f-w + l logic.
+5,Concentration,"My dog has a difficult time staying focused on one task during activities (e.g. during training sessions, when attempting to problem solve or during play).",symptom_block,yes_no_then_f_fw_l,yes,Scored with Main + f + f-w + l logic.
+6,Itching,"My dog seems to itch, lick or chew on its paws, tail or other parts of its body more frequently than other dogs and/or has caused bald spots or sores from excessive grooming behavior.",symptom_block,yes_no_then_f_fw_l,yes,Scored with Main + f + f-w + l logic.
+7,Improper Urination,My dog urinates (pees) inside the home (not on potty mats or in a litter box).,symptom_block,yes_no_then_f_fw_l,yes,Scored with Main + f + f-w + l logic.
+8,Improper Defecation,My dog defecates (poops) inside the home (not on potty mats or in a litter box).,symptom_block,yes_no_then_f_fw_l,yes,Scored with Main + f + f-w + l logic.
+9,Restless,My dog is restless (seems to have difficulty finding or staying in a comfortable resting position).,symptom_block,yes_no_then_f_fw_l,yes,Scored with Main + f + f-w + l logic.
+10,Play with Dogs,"My dog engages in social play and/or other positive interactions with most other dogs without signs of anxiety, fear or aggression.",binary_protective,yes_no_only,yes,Protective / positive item. Converted to 0/1 score in existing scoring pipeline.
+11,Anxiety,My dog gets anxious.,symptom_block,yes_no_then_f_fw_l,yes,Scored with Main + f + f-w + l logic.
+12,Air Biting,My dog bites or snaps at the air (when there is nothing visible to snap at).,symptom_block,yes_no_then_f_fw_l,yes,Scored with Main + f + f-w + l logic.
+13,Excitement,"Once my dog gets excited, it takes a long time to calm down (e.g. more than 10 minutes).",symptom_block,yes_no_then_f_fw_l,yes,Scored with Main + f + f-w + l logic.
+14,Mounting,"My dog tries to mount on people, objects or other animals (outside of mating/breeding).",symptom_block,yes_no_then_f_fw_l,yes,Scored with Main + f + f-w + l logic.
+15,Aggressiveness,My dog suddenly reacts aggressively towards people or dogs.,symptom_block,yes_no_then_f_fw_l,yes,Scored with Main + f + f-w + l logic.
+16,General Play,My dog loves to play.,binary_protective,yes_no_only,yes,Protective / positive item. Converted to 0/1 score in existing scoring pipeline.
+17,Appetite Loss,There are times when my dog refuses to eat or take favorite treats.,symptom_block,yes_no_then_f_fw_l,yes,Scored with Main + f + f-w + l logic.
+18,Shadow Hunting,My dog hunts reflections and shadows.,symptom_block,yes_no_then_f_fw_l,yes,Scored with Main + f + f-w + l logic.
+19,Leash Biting,My dog bites or chews at their leash when walking.,symptom_block,yes_no_then_f_fw_l,yes,Scored with Main + f + f-w + l logic.
+20,Chewing,"My dog eats or chews almost everything, including non-edible items.",symptom_block,yes_no_then_f_fw_l,yes,Scored with Main + f + f-w + l logic.
+21,New Places,My dog feels confident when in new places.,binary_protective,yes_no_only,yes,Protective / positive item. Converted to 0/1 score in existing scoring pipeline.
+22,Vocalization,"There are times when my dog desperately barks, whines or squeals.",symptom_block,yes_no_then_f_fw_l,yes,Scored with Main + f + f-w + l logic.
+23,Grass Eating,There are times where my dog excessively eats grass during walks.,symptom_block,yes_no_then_f_fw_l,yes,Scored with Main + f + f-w + l logic.
+24,Sound Sensitivity,My dog seems to wake up from any tiny sound.,symptom_block,yes_no_then_f_fw_l,yes,Scored with Main + f + f-w + l logic.
+25,Freezing,My dog freezes (holds still/stops moving) in challenging situations.,symptom_block,yes_no_then_f_fw_l,yes,Scored with Main + f + f-w + l logic.
+26,Strange Behavior,"At times, my dog acts strangely or unpredictably in familiar situations.",symptom_block,yes_no_then_f_fw_l,yes,Scored with Main + f + f-w + l logic.
+27,Contact Refuses,"At times, my dog refuses physical contact with familiar people or dogs (even if the dog liked to have contact with them before).",symptom_block,yes_no_then_f_fw_l,yes,Scored with Main + f + f-w + l logic.
+28,Destroying,"My dog has damaged floors, walls or furniture (e.g. chewing, scratching, digging indoors).",symptom_block,yes_no_then_f_fw_l,yes,Scored with Main + f + f-w + l logic.
+29,Shaking,My dog shakes their body (as if shaking off water) when they are not wet.,symptom_block,yes_no_then_f_fw_l,yes,Scored with Main + f + f-w + l logic.
+30,Head Away,My dog turns their head away and/or squints when confronting something novel or that might make them uncomfortable (not from bright lights).,symptom_block,yes_no_then_f_fw_l,yes,Scored with Main + f + f-w + l logic.
+31,New Dogs,My dog interacts with unfamiliar dogs with interest and in a positive manner.,binary_protective,yes_no_only,yes,Protective / positive item. Converted to 0/1 score in existing scoring pipeline.
+32,Yawning,My dog yawns at unusual times/with no other signs of being tired.,symptom_block,yes_no_then_f_fw_l,yes,Scored with Main + f + f-w + l logic.
+33,Licking,My dog licks their mouth at unusual times (e.g. at times outside of eating or drinking).,symptom_block,yes_no_then_f_fw_l,yes,Scored with Main + f + f-w + l logic.
+34,Salivation,"My dog seems to drool more than most dogs, or drools when in new or uncomfortable situations (in the absence of food or treats).",symptom_block,yes_no_then_f_fw_l,yes,Scored with Main + f + f-w + l logic.
+35,Depression,"My dog shows signs of depression-like behavior (low energy, avoids social interactions, shows little interest in activities they used to enjoy).",symptom_block,yes_no_then_f_fw_l,yes,Scored with Main + f + f-w + l logic.
+36,Sleep Poorly,"My dog sleeps poorly (for example, waking up often at night, restless during sleep, trouble falling asleep, or less sleep than you would typically expect overall).",symptom_block,yes_no_then_f_fw_l,yes,Scored with Main + f + f-w + l logic.
+37,New Objects,My dog is eager to interact with and explore new objects with little to no signs of hesitation or fear.,binary_protective,yes_no_only,yes,Protective / positive item. Converted to 0/1 score in existing scoring pipeline.

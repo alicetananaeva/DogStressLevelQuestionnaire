@@ -1,0 +1,41 @@
+# Streamlit secrets (never commit real credentials)
+.streamlit/secrets.toml
+# NOTE: secrets.toml.example is intentionally NOT ignored - it belongs in the repo
+
+# Local session data (participant responses)
+dslq_sessions/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+
+# Virtual environments
+.venv/
+venv/
+env/
+.env
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Testing / batch files (keep out of public repo)
+test_batch.py
+foxy_test_case.csv
+2-3_DSLQ_Numeric.csv
+4-4_DSLQ_Unique_Dogs_Scored_Chronic.csv

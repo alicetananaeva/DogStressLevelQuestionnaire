@@ -1,0 +1,18 @@
+option_set,value,label
+yes_no,1,Yes
+yes_no,2,No
+f_followup,1,Sometimes
+f_followup,2,Frequently
+f_followup,3,Constantly
+f_followup,4,Only in a specific situation or context (please describe)
+fw_followup,1,1 day
+fw_followup,2,2 days
+fw_followup,3,3 days
+fw_followup,4,4 days
+fw_followup,5,5 days
+fw_followup,6,6 days
+fw_followup,7,7 days
+fw_followup,8,It happens less than once a week
+fw_followup,9,I do not know / it varies
+l_followup,1,This started less than two weeks ago
+l_followup,2,This started more than two weeks ago

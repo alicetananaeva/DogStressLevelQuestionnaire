@@ -1,0 +1,42 @@
+key,section,audience,display_order,text
+screen_intro_title,intro,user,1,Dog Stress Level Questionnaire (DSLQ)
+screen_intro_body,intro,user,2,"This questionnaire asks about behavioral signs that may be associated with chronic stress in your dog. Please answer as honestly and accurately as possible. There are no ""good"" or ""bad"" answers. Your result will be shown only to you. At the end, we will ask separately whether you would like to share your answers for research purposes."
+screen_intro_time,intro,user,3,Most people complete this questionnaire in about 10-15 minutes.
+screen_intro_single_dog,intro,user,4,"If you live with more than one dog, please choose one dog and answer for that dog only."
+screen_intro_yes_hint,intro,user,5,"Important: for behavior items, please choose ""Yes"" even if you observe the behavior only occasionally. If you choose ""Yes"", you will usually be asked about frequency and duration."
+result_title,results,user,1,Chronic Stress Screening Result
+result_subtitle,results,user,2,Relative to the current reference sample (n = 149 unique dogs).
+result_score_label,results,user,3,Score
+result_band_normal,results,user,4,"Your dog's chronic stress score falls within the normal range relative to the current reference sample. This does not rule out stress in specific situations, but it suggests that chronic stress_related signs are not elevated overall."
+result_band_elevated,results,user,5,"Your dog's chronic stress score is elevated relative to the current reference sample. It may be worth taking a closer look at your dog's daily routine, environment, health, and opportunities to meet key needs, and considering a consultation with a qualified dog behavior or welfare professional if concerns persist."
+result_band_high,results,user,6,"Your dog's chronic stress score is high relative to the current reference sample. It may be especially important to review their daily routine, environment, health, and opportunities to meet key needs, and to discuss any concerns with a qualified dog behavior or welfare professional."
+result_band_ultra_high,results,user,7,Your dog's chronic stress score is extremely high and exceeds the highest value observed in the current reference sample. Reviewing daily management with a qualified dog behavior or welfare professional is strongly recommended.
+result_disclaimer,results,user,8,This tool is intended as a screening aid and does not provide a clinical diagnosis.
+health_title,health_module,user,1,Health-related signs
+health_none,health_module,user,2,No chronic health-related signs were flagged by the General Health item.
+health_flag,health_module,user,3,Chronic health-related signs were reported on the General Health item.
+health_body,health_module,user,4,"Some health-related signs can overlap with or contribute to chronic stress. If these signs are new, persistent, or worsening, a veterinary check may be warranted."
+health_visual_hint,health_module,builder,5,"Display this as a separate module under the main chronic stress result, not as part of the primary DSLQ Chronic score."
+health_reported_not_chronic,health_module,user,6,"Some health-related signs were reported, but they do not currently meet the chronic health-flag rule used in this app."
+save_data_title,data_sharing,user,1,Would you like to share your data for research?
+save_data_body,data_sharing,user,2,Sharing your data is optional. You can receive your result whether or not you choose to share anything.
+save_data_dog_checkbox,data_sharing,user,3,"I agree to share my dog's questionnaire data for future research related to dog well-being, behavior, or human-animal interactions."
+save_data_human_checkbox,data_sharing,user,4,"I agree to share demographic information about myself for future research related to dog well-being, behavior, or human-animal interactions."
+save_data_no_thanks,data_sharing,user,5,"No, I do not want to share my data."
+consent_optional_title,consent_optional,user,1,Optional Research Data Consent
+consent_optional_body,consent_optional,user,2,"You are not required to share your answers to receive your result. If you choose to share data, your questionnaire responses and any optional demographic information you provide may be stored securely and used for future research related to pet dog well-being, dog behavior, and human-animal interactions. Published results will be presented in aggregate or de-identified form. You may skip any optional questions you do not wish to answer."
+consent_optional_storage,consent_optional,user,3,"If you agree to share data, your responses will be stored in a secure research database with restricted access."
+consent_optional_contact,consent_optional,user,4,Agreeing to share questionnaire data for research is separate from agreeing to be contacted about future studies.
+consent_optional_agree,consent_optional,user,5,"Yes, I agree to the optional storage and research use of the data I selected above."
+consent_optional_decline,consent_optional,user,6,"No, I do not want my data stored for research."
+dog_demo_title,dog_demographics_optional,user,1,Optional Dog Demographics
+human_demo_title,human_demographics_optional,user,1,Optional Human Demographics
+future_builder_note,builder_notes,builder,1,"Keep a clean architecture so that a future paid professional/consultant module can be added later without changing the research-facing flow. Suggested future extension: multi-client dashboard with separate consent, clinician notes, and export tools."
+future_contact_title,future_contact_optional,user,1,Would you like to hear about future studies?
+future_contact_body,future_contact_optional,user,2,"If you choose yes, we will ask for your contact details and use them only to tell you about future study opportunities or study updates."
+future_contact_checkbox,future_contact_optional,user,3,"Yes, you may contact me about future study opportunities or study updates."
+future_contact_name_label,future_contact_optional,user,4,Your name
+future_contact_email_label,future_contact_optional,user,5,Your email address
+completion_nothing_saved,completion,user,1,"Thank you for completing the questionnaire. Your result was shown only to you, and no data were saved for research."
+completion_research_saved,completion,user,2,Thank you for completing the questionnaire. The data you agreed to share were saved for research.
+completion_research_and_contact,completion,user,3,"Thank you for completing the questionnaire. The data you agreed to share were saved for research, and your contact details were saved separately for future study updates or opportunities."
