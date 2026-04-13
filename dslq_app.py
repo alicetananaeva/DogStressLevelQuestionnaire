@@ -495,6 +495,7 @@ def _supabase_insert(payload: Dict[str, Any]) -> bool:
     and rendered on the result/completion screens.
     """
     try:
+        import urllib.error
         import urllib.request
 
         secrets = st.secrets["supabase"]
@@ -529,6 +530,7 @@ def _supabase_insert(payload: Dict[str, Any]) -> bool:
             method="POST",
             headers={
                 "Content-Type": "application/json",
+                "Accept": "application/json",
                 "apikey": key,
                 "Authorization": f"Bearer {key}",
                 "Prefer": "return=minimal",
@@ -544,6 +546,20 @@ def _supabase_insert(payload: Dict[str, Any]) -> bool:
                     None,
                 )
             return ok
+    except urllib.error.HTTPError as e:
+        body_text = ""
+        try:
+            body_bytes = e.read()
+            body_text = body_bytes.decode("utf-8", errors="replace") if body_bytes else ""
+        except Exception:
+            body_text = ""
+
+        detail = body_text.strip() if body_text.strip() else "(empty response body)"
+        _set_supabase_diag(
+            f"Supabase insert failed: HTTP {e.code} {e.reason}. Response: {detail}",
+            None,
+        )
+        return False
     except Exception as e:
         import traceback
 
