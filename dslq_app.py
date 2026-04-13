@@ -443,7 +443,10 @@ def _supabase_insert(payload: Dict[str, Any]) -> bool:
         )
         with urllib.request.urlopen(req, timeout=10) as resp:
             return resp.status in (200, 201)
-    except Exception:
+    except Exception as e:
+        import traceback
+        st.error(f"Supabase insert failed: {e}")
+        st.text(traceback.format_exc())
         return False
 
 
