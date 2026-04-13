@@ -579,8 +579,9 @@ def screen_questionnaire() -> None:
     rtype = str(row["response_type"])
     ans   = st.session_state["answers"]
 
-    # Progress (behaviour questions 1–37; health questions will be 38–42)
-    TOTAL_ALL = 42
+    # Progress (behaviour questions 1–37; total depends on dog sex for GH module)
+    dog_sex_  = st.session_state.get("dog_sex", "")
+    TOTAL_ALL = 37 + len(get_gh_options(dog_sex_))
     st.progress((idx + 1) / TOTAL_ALL)
     st.markdown(
         f'<p class="progress-label">Question {idx + 1} of {TOTAL_ALL}</p>',
@@ -722,10 +723,10 @@ def screen_general_health() -> None:
     code, symptom_lbl = gh_opts[gh_idx]
     yn_codes = [code for code, _ in opt("yes_no")]
 
-    # Progress (health questions 38–42 out of 42 total)
-    TOTAL_ALL = 42
+    # Progress (health questions 38..N out of 37+total total)
+    TOTAL_ALL = 37 + total  # total = actual number of GH items for this dog's sex
     q_num_display = 37 + gh_idx + 1
-    st.progress(q_num_display / TOTAL_ALL)
+    st.progress(min(q_num_display / TOTAL_ALL, 1.0))
     st.markdown(
         f'<p class="progress-label">Question {q_num_display} of {TOTAL_ALL}</p>',
         unsafe_allow_html=True,
