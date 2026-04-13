@@ -442,11 +442,15 @@ def _supabase_insert(payload: Dict[str, Any]) -> bool:
             },
         )
         with urllib.request.urlopen(req, timeout=10) as resp:
-            return resp.status in (200, 201)
+            ok = resp.status in (200, 201)
+            if ok:
+                st.session_state["supabase_error"] = None
+                st.session_state["supabase_traceback"] = None
+            return ok
     except Exception as e:
         import traceback
-        st.error(f"Supabase insert failed: {e}")
-        st.text(traceback.format_exc())
+        st.session_state["supabase_error"] = f"Supabase insert failed: {e}"
+        st.session_state["supabase_traceback"] = traceback.format_exc()
         return False
 
 
@@ -521,6 +525,8 @@ def init_state() -> None:
         # gh_selected removed — gh_durations is the single source of truth for health answers
         "gh_item_index":  0,                   # which GH item we're asking duration for
         "gh_durations":   {},                  # code -> duration int
+        "supabase_error": None,
+        "supabase_traceback": None,
     }
     for k, v in defaults.items():
         if k not in st.session_state:
@@ -875,6 +881,11 @@ def screen_result() -> None:
     st.session_state["score_result"] = result
 
     st.markdown(f"## {c('result_title', 'Chronic Stress Screening Result')}")
+
+    if st.session_state.get("supabase_error"):
+        st.error(st.session_state["supabase_error"])
+        if st.session_state.get("supabase_traceback"):
+            st.text(st.session_state["supabase_traceback"])
 
     # Score + band badge (no wrapper div — use columns directly)
     col1, col2 = st.columns([1, 2])
