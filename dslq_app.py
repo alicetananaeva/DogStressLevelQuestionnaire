@@ -401,12 +401,59 @@ def compute_score(answers: Dict[str, Any]) -> ScoreResult:
 # 5. STORAGE  (pluggable)
 # ─────────────────────────────────────────────
 
-STORAGE_MODE = "local"   # "none" | "local"
+STORAGE_MODE = "supabase"   # "none" | "local" | "supabase"
+
+
+def _supabase_insert(payload: Dict[str, Any]) -> bool:
+    """Insert one session record into Supabase. Returns True on success."""
+    try:
+        import urllib.request
+        secrets = st.secrets["supabase"]
+        url  = secrets["url"].rstrip("/") + "/rest/v1/dslq_sessions"
+        key  = secrets["key"]
+        raw  = payload.get("raw_answers_json", {})
+        record = {
+            "session_id":          payload.get("session_id"),
+            "app_version":         payload.get("app_version"),
+            "dslq_chronic_score":  payload.get("dslq_chronic_score"),
+            "interpretation_band": payload.get("interpretation_band"),
+            "health_flag":         payload.get("health_flag"),
+            "visual_scale_pos":    payload.get("visual_scale_pos"),
+            "item_scores":         payload.get("item_scores"),
+            "behavior_answers":    raw.get("behavior_answers"),
+            "general_health_answers": raw.get("general_health_answers"),
+            "research_choices":    payload.get("research_choices"),
+            "dog_demographics":    payload.get("dog_demographics"),
+            "human_demographics":  payload.get("human_demographics"),
+            "contact_details":     payload.get("contact_details"),
+            "consented_dog":       bool((payload.get("research_choices") or {}).get("share_questionnaire_data")),
+            "consented_demo":      bool((payload.get("research_choices") or {}).get("share_demographic_data")),
+        }
+        data = json.dumps(record, ensure_ascii=False, default=str).encode("utf-8")
+        req  = urllib.request.Request(
+            url,
+            data=data,
+            method="POST",
+            headers={
+                "Content-Type":  "application/json",
+                "apikey":        key,
+                "Authorization": f"Bearer {key}",
+                "Prefer":        "return=minimal",
+            },
+        )
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            return resp.status in (200, 201)
+    except Exception:
+        return False
 
 
 def persist_session(payload: Dict[str, Any]) -> Optional[Path]:
     if STORAGE_MODE == "none":
         return None
+    if STORAGE_MODE == "supabase":
+        _supabase_insert(payload)
+        return None  # no local path for supabase mode
+    # local fallback
     try:
         base = find_data_dir() / "dslq_sessions"
         base.mkdir(exist_ok=True)
