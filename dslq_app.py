@@ -1,22 +1,17 @@
 """
-0_DSLQ_App_Streamlit.py
-======================
+dslq_app.py
+===========
 
-Role in analysis / data pipeline
--------------------------------
-Interactive Streamlit application for the Dog Stress Level Questionnaire (DSLQ).
-This app administers the questionnaire, computes the DSLQ chronic stress score,
-and (optionally) persists a session record to Supabase.
+Dog Stress Level Questionnaire (DSLQ) — Streamlit application.
 
-This script includes **persistent Supabase error diagnostics**: if the Supabase
-insert fails, the error and traceback are stored in `st.session_state` and are
-rendered on the Result / Completion screens so they do not "flash and disappear"
-after Streamlit reruns.
+Administers the questionnaire, computes the chronic stress score, and optionally
+persists records to Supabase (`dslq_sessions` for research data, `dslq_contacts`
+for future-contact details). Supabase diagnostics are stored in `st.session_state`
+and shown on the Result / Completion screens so errors do not disappear on rerun.
 
 Input files (relative paths)
 ----------------------------
-The app expects the following CSV files to be colocated with this script
-or inside a sibling `Source/` folder (same behavior as upstream app):
+Place CSVs next to this script or in a sibling `Source/` folder:
 
 - `DSLQ_App_Copy.csv`
 - `DSLQ_App_BehaviorItems.csv`
@@ -24,27 +19,16 @@ or inside a sibling `Source/` folder (same behavior as upstream app):
 - `DSLQ_App_ResponseOptions.csv`
 - `DSLQ_App_ScoringConfig.csv`
 
-Output files (relative paths)
------------------------------
-Supabase mode (default):
-- No local files are written by default. Session data is sent to Supabase.
+Output
+------
+- Supabase (default): REST inserts; no local files unless using local storage mode.
+- Local fallback: `dslq_sessions/<session_id>.json` under the data directory.
 
-Local mode (optional fallback inside the data directory):
-- `dslq_sessions/<session_id>.json`
+Run
+---
+From this folder (`DSLQ_App`):
 
-Scientific / biological rationale
---------------------------------
-Chronic stress affects canine welfare and behavior. This questionnaire-based
-screening tool aggregates symptom and protective behavior indicators into a
-continuous score, which is mapped to interpretable bands (Normal/Elevated/High/
-Extremely High). The optional general health module captures physical signs
-potentially associated with stress or contributing factors.
-
-Execution example
------------------
-From the SfJ_Analysis root:
-
-    streamlit run Scripts/0_DSLQ_App_Streamlit.py
+    streamlit run dslq_app.py
 """
 
 from __future__ import annotations
@@ -340,6 +324,33 @@ GH_LENGTH_OPTIONS: List[Tuple[int, str]] = [
     (4, "It varies / Other"),
 ]
 
+
+def _normalize_gh_duration(duration_code: int) -> int:
+    """Map 'It varies / Other' (4) to the same interpretation as 'Less than a week' (1)."""
+    if int(duration_code) == 4:
+        return 1
+    return int(duration_code)
+
+
+def _is_valid_email_simple(email: str) -> bool:
+    """Practical email check without heavy regex (no spaces; local@domain with dot in domain)."""
+    e = str(email or "")
+    if not e or e.strip() != e:
+        return False
+    if " " in e:
+        return False
+    if "@" not in e:
+        return False
+    local, domain = e.split("@", 1)
+    if not local or not domain:
+        return False
+    if "." not in domain:
+        return False
+    if domain.startswith(".") or domain.endswith(".") or ".." in domain:
+        return False
+    return True
+
+
 # ─────────────────────────────────────────────
 # 4. SCORING ENGINE  (Doc4 + Doc6)
 # ─────────────────────────────────────────────
@@ -487,6 +498,7 @@ HUMAN_DEMO_EXCLUDED_FIELD_KEYS = frozenset(
         "participant_name",
         "owner_name",
         "human_name",
+        "corvallis_distance",  # legacy; not in human demographics; ignore if present in CSV
     }
 )
 
@@ -843,36 +855,28 @@ def render_scale(score: float, scale_pos: float) -> None:
 
 def render_supabase_diagnostics() -> None:
     """Render stored Supabase diagnostics (if any) on stable screens."""
+    # Show session and contact errors separately (success on one must not hide failure on the other).
     err = st.session_state.get("supabase_error")
     tb = st.session_state.get("supabase_traceback")
-    ok = st.session_state.get("supabase_insert_ok")
 
-    if ok is True:
-        return
-
-    if not err and not tb:
-        return
-
-    st.markdown("---")
-    st.markdown("### Supabase diagnostics")
-    if err:
-        st.error(err)
-    if tb:
-        st.code(tb)
+    if err or tb:
+        st.markdown("---")
+        st.markdown("### Supabase diagnostics")
+        if err:
+            st.error(err)
+        if tb:
+            st.code(tb)
 
     contact_err = st.session_state.get("supabase_contact_error")
     contact_tb = st.session_state.get("supabase_contact_traceback")
-    contact_ok = st.session_state.get("supabase_contact_insert_ok")
-    if contact_ok is True:
-        return
-    if not contact_err and not contact_tb:
-        return
-    st.markdown("---")
-    st.markdown("### Supabase contact diagnostics")
-    if contact_err:
-        st.error(contact_err)
-    if contact_tb:
-        st.code(contact_tb)
+
+    if contact_err or contact_tb:
+        st.markdown("---")
+        st.markdown("### Supabase contact diagnostics")
+        if contact_err:
+            st.error(contact_err)
+        if contact_tb:
+            st.code(contact_tb)
 
 
 # ─────────────────────────────────────────────
@@ -1147,7 +1151,7 @@ def screen_general_health() -> None:
             if dur_val is None:
                 st.warning("Please indicate when you first observed this sign.")
                 st.stop()
-            durations[code] = int(dur_val)
+            durations[code] = _normalize_gh_duration(int(dur_val))
         else:
             durations[code] = -1  # No
         st.session_state["gh_durations"] = durations
@@ -1382,8 +1386,6 @@ def screen_demographics() -> None:
                     if fk == "human_dog_activity":
                         act_yes = val == "Yes"
                 elif rtype in ("text", "email"):
-                    if fk in ("corvallis_distance",):
-                        continue
                     hum_demo[fk] = st.text_input(
                         qtxt, value=hum_demo.get(fk, ""), key=f"hd_{fk}"
                     )
@@ -1465,14 +1467,20 @@ def screen_contact() -> None:
     if back:
         go("sharing")
     if nxt:
-        if wants_contact == "Yes" and email_val and "@" not in email_val:
-            st.error("Please enter a valid email address (must contain @).")
-            st.stop()
+        if wants_contact == "Yes":
+            if not str(email_val or "").strip():
+                st.error("Please enter an email address to be contacted in the future.")
+                st.stop()
+            if not _is_valid_email_simple(email_val):
+                st.error(
+                    "Please enter a valid email address (e.g., test@example.com). "
+                    "Spaces are not allowed."
+                )
+                st.stop()
         choices["future_contact"] = wants_contact == "Yes"
         contact["future_contact"] = wants_contact
         contact["contact_name"] = name_val
         contact["contact_email"] = email_val
-        contact["corvallis_distance"] = ""
         st.session_state["contact"] = contact
         st.session_state["choices"] = choices
         share_q = choices.get("share_questionnaire_data", False)
