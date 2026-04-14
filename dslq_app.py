@@ -1248,33 +1248,33 @@ def screen_result() -> None:
         st.markdown("---")
         st.markdown("**Health-related signs**")
 
+        st.markdown(
+            "Some health issues you mentioned may be associated with chronic stress: "
+            "they can both reflect it and contribute to it."
+        )
+
         if chronic_codes:
             chronic_list = _labels_for(chronic_codes)
             st.markdown(
-                f"Reported issues *(present for over a month)*: {chronic_list}. "
-                "These changes may be associated with chronic stress. "
-                "Health problems can both contribute to chronic stress and reflect it. "
-                "It may be worth paying particular attention to these signs."
+                f"**Present for over a month:** {chronic_list}. "
+                "These signs have been present for a relatively long time and may be more strongly associated with chronic stress. "
+                "If you have not already done so, it may be important to work with your veterinarian and a behavior or welfare professional."
             )
 
-        # Less than a month (code 2) vs less than a week + varies (code 1; code 4→1).
         if within_month_codes:
             month_list = _labels_for(within_month_codes)
             st.markdown(
-                f"Reported issues *(first observed less than a month ago)*: {month_list}. "
-                "These changes may be relevant when interpreting the current picture. "
-                "Health problems can both contribute to chronic stress and reflect it. "
-                "It may be worth paying particular attention to these signs."
+                f"**First observed less than a month ago:** {month_list}. "
+                "These signs may be either symptoms of chronic stress or factors contributing to it. "
+                "If your veterinarian has not identified a medical cause, a consultation with a behavior or welfare professional may also be helpful."
             )
 
         if week_or_varies_codes:
             week_list = _labels_for(week_or_varies_codes)
             st.markdown(
-                f"Reported issues "
-                f"*(first noticed within about the past week, or varying in timing / other)*: {week_list}. "
-                "These changes may be relevant to the early development of chronic stress. "
-                "Health problems can both contribute to chronic stress and reflect it. "
-                "It may be worth paying particular attention to these signs."
+                f"**First noticed within the past week, or varying in timing:** {week_list}. "
+                "These signs may be recent or inconsistent, but they can still matter. "
+                "If they repeat, persist, or become more noticeable, it may be worth seeking professional advice."
             )
 
     # Render Supabase diagnostics here (stable screen)
