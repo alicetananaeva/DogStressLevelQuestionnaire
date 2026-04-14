@@ -474,6 +474,27 @@ def compute_score(answers: Dict[str, Any]) -> ScoreResult:
 
 STORAGE_MODE = "supabase"  # "none" | "local" | "supabase"
 
+# Human optional fields that belong only on the contact screen (not stored in human_demographics).
+HUMAN_DEMO_EXCLUDED_FIELD_KEYS = frozenset(
+    {
+        "contact_name",
+        "contact_email",
+        "first_name",
+        "last_name",
+        "surname",
+        "human_first_name",
+        "human_last_name",
+        "participant_name",
+        "owner_name",
+        "human_name",
+    }
+)
+
+
+def _human_demo_for_export(human_demo: Dict[str, Any]) -> Dict[str, Any]:
+    """Strip contact/name fields so human_demographics never duplicates contact data."""
+    return {k: v for k, v in human_demo.items() if k not in HUMAN_DEMO_EXCLUDED_FIELD_KEYS}
+
 
 def _set_supabase_diag(error: Optional[str], traceback_text: Optional[str]) -> None:
     """Persist Supabase diagnostics in session state for later screens."""
@@ -485,6 +506,18 @@ def _set_supabase_diag(error: Optional[str], traceback_text: Optional[str]) -> N
         st.session_state["supabase_traceback"] = str(traceback_text)
     else:
         st.session_state["supabase_traceback"] = None
+
+
+def _set_supabase_contact_diag(error: Optional[str], traceback_text: Optional[str]) -> None:
+    """Persist Supabase contact-table diagnostics in session state."""
+    if error:
+        st.session_state["supabase_contact_error"] = str(error)
+    else:
+        st.session_state["supabase_contact_error"] = None
+    if traceback_text:
+        st.session_state["supabase_contact_traceback"] = str(traceback_text)
+    else:
+        st.session_state["supabase_contact_traceback"] = None
 
 
 def _supabase_insert(payload: Dict[str, Any]) -> bool:
@@ -502,6 +535,7 @@ def _supabase_insert(payload: Dict[str, Any]) -> bool:
         url = secrets["url"].rstrip("/") + "/rest/v1/dslq_sessions"
         key = secrets["key"]
         raw = payload.get("raw_answers_json", {})
+        # Contact data lives only in table `dslq_contacts`; do not store contact_details here.
         record = {
             "session_id": payload.get("session_id"),
             "app_version": payload.get("app_version"),
@@ -515,7 +549,6 @@ def _supabase_insert(payload: Dict[str, Any]) -> bool:
             "research_choices": payload.get("research_choices"),
             "dog_demographics": payload.get("dog_demographics"),
             "human_demographics": payload.get("human_demographics"),
-            "contact_details": payload.get("contact_details"),
             "consented_dog": bool(
                 (payload.get("research_choices") or {}).get("share_questionnaire_data")
             ),
@@ -589,6 +622,99 @@ def persist_session(payload: Dict[str, Any]) -> Optional[Path]:
         return None
 
 
+def _supabase_insert_contact(payload: Dict[str, Any]) -> bool:
+    """Insert one contact record into Supabase table `dslq_contacts`.
+
+    This is independent from research consent and must only contain contact data.
+    """
+    try:
+        import urllib.error
+        import urllib.request
+
+        secrets = st.secrets["supabase"]
+        url = secrets["url"].rstrip("/") + "/rest/v1/dslq_contacts"
+        key = secrets["key"]
+
+        contact = payload.get("contact_details") or {}
+        record = {
+            "session_id": payload.get("session_id"),
+            "created_at": payload.get("created_at"),
+            "name": contact.get("contact_name") or None,
+            "email": contact.get("contact_email") or None,
+            "consented_future_contact": bool((payload.get("research_choices") or {}).get("future_contact")),
+            "app_version": payload.get("app_version"),
+        }
+
+        data = json.dumps(record, ensure_ascii=False, default=str).encode("utf-8")
+        req = urllib.request.Request(
+            url,
+            data=data,
+            method="POST",
+            headers={
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+                "apikey": key,
+                "Authorization": f"Bearer {key}",
+                "Prefer": "return=minimal",
+            },
+        )
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            ok = resp.status in (200, 201)
+            if ok:
+                _set_supabase_contact_diag(None, None)
+            else:
+                _set_supabase_contact_diag(
+                    f"Supabase contact insert failed (HTTP {resp.status}).",
+                    None,
+                )
+            return ok
+    except urllib.error.HTTPError as e:
+        body_text = ""
+        try:
+            body_bytes = e.read()
+            body_text = body_bytes.decode("utf-8", errors="replace") if body_bytes else ""
+        except Exception:
+            body_text = ""
+
+        detail = body_text.strip() if body_text.strip() else "(empty response body)"
+        _set_supabase_contact_diag(
+            f"Supabase contact insert failed: HTTP {e.code} {e.reason}. Response: {detail}",
+            None,
+        )
+        return False
+    except Exception as e:
+        import traceback
+
+        _set_supabase_contact_diag(
+            f"Supabase contact insert failed: {e}",
+            traceback.format_exc(),
+        )
+        return False
+
+
+def persist_contact(payload: Dict[str, Any]) -> None:
+    """Persist contact details to Supabase if eligible.
+
+    Rules:
+    - Save to `dslq_contacts` if future_contact == True and email is non-empty.
+    - Must work independently from research consent.
+    """
+    if STORAGE_MODE != "supabase":
+        st.session_state["supabase_contact_insert_ok"] = None
+        _set_supabase_contact_diag(None, None)
+        return
+
+    contact = payload.get("contact_details") or {}
+    wants = bool((payload.get("research_choices") or {}).get("future_contact"))
+    email = str(contact.get("contact_email") or "").strip()
+
+    if wants and email:
+        st.session_state["supabase_contact_insert_ok"] = _supabase_insert_contact(payload)
+    else:
+        st.session_state["supabase_contact_insert_ok"] = None
+        _set_supabase_contact_diag(None, None)
+
+
 def build_export(
     result: ScoreResult,
     answers: Dict[str, Any],
@@ -623,7 +749,8 @@ def build_export(
         },
         "research_choices": choices,
         "dog_demographics": dog_demo,
-        "human_demographics": human_demo,
+        "human_demographics": _human_demo_for_export(human_demo),
+        # Kept for contact insert + local JSON; not written to Supabase dslq_sessions.
         "contact_details": contact,
     }
 
@@ -658,6 +785,10 @@ def init_state() -> None:
         "supabase_error": None,
         "supabase_traceback": None,
         "supabase_insert_ok": None,
+        # Supabase diagnostics for contact table
+        "supabase_contact_error": None,
+        "supabase_contact_traceback": None,
+        "supabase_contact_insert_ok": None,
     }
     for k, v in defaults.items():
         if k not in st.session_state:
@@ -728,6 +859,20 @@ def render_supabase_diagnostics() -> None:
         st.error(err)
     if tb:
         st.code(tb)
+
+    contact_err = st.session_state.get("supabase_contact_error")
+    contact_tb = st.session_state.get("supabase_contact_traceback")
+    contact_ok = st.session_state.get("supabase_contact_insert_ok")
+    if contact_ok is True:
+        return
+    if not contact_err and not contact_tb:
+        return
+    st.markdown("---")
+    st.markdown("### Supabase contact diagnostics")
+    if contact_err:
+        st.error(contact_err)
+    if contact_tb:
+        st.code(contact_tb)
 
 
 # ─────────────────────────────────────────────
@@ -1180,7 +1325,8 @@ def screen_demographics() -> None:
 
         if share_d:
             st.markdown(f"### {c('human_demo_title', 'Optional Human Demographics')}")
-            fut_yes = hum_demo.get("future_contact") == "Yes"
+            # future_contact is collected on the contact screen (choices), not in human_demo.
+            fut_yes = bool(choices.get("future_contact"))
             act_yes = hum_demo.get("human_dog_activity") == "Yes"
             hum_rows = OPTIONAL_DF[
                 OPTIONAL_DF["section"] == "human_demographics_optional"
@@ -1191,6 +1337,10 @@ def screen_demographics() -> None:
                 qtxt = str(f["question_text"])
                 rtype = str(f["response_type"])
                 show_if = str(f["show_if"]) if pd.notna(f.get("show_if")) else ""
+
+                # Names / contact identity belong only on the contact screen.
+                if fk in HUMAN_DEMO_EXCLUDED_FIELD_KEYS:
+                    continue
 
                 if "future_contact = Yes" in show_if and not fut_yes:
                     continue
@@ -1232,7 +1382,7 @@ def screen_demographics() -> None:
                     if fk == "human_dog_activity":
                         act_yes = val == "Yes"
                 elif rtype in ("text", "email"):
-                    if fk in ("contact_name", "contact_email", "corvallis_distance"):
+                    if fk in ("corvallis_distance",):
                         continue
                     hum_demo[fk] = st.text_input(
                         qtxt, value=hum_demo.get(fk, ""), key=f"hd_{fk}"
@@ -1268,6 +1418,9 @@ def _wrap_up() -> None:
     if choices["share_questionnaire_data"] or choices["share_demographic_data"]:
         saved = persist_session(blob)
         st.session_state["saved_path"] = str(saved) if saved else None
+
+    # Contact saving must be independent from research consent.
+    persist_contact(blob)
     go("result")
 
 
@@ -1335,17 +1488,24 @@ def screen_completion() -> None:
     saved_path = st.session_state.get("saved_path")
     export_blob = st.session_state.get("export_blob")
     saved_data = choices.get("share_questionnaire_data") or choices.get("share_demographic_data")
-    saved_contact = bool(
-        choices.get("future_contact") and st.session_state["contact"].get("contact_email")
-    )
+    wants_contact = bool(choices.get("future_contact") and st.session_state["contact"].get("contact_email"))
+    contact_saved = st.session_state.get("supabase_contact_insert_ok") is True
 
     st.markdown("## 🐾 Thank you!")
 
-    if saved_contact:
+    if saved_data and contact_saved:
         st.success(
-            "Thank you for completing the questionnaire. The data you agreed to share were saved "
-            "for research, and your contact details were saved separately for future study updates "
-            "or opportunities."
+            "Thank you for completing the questionnaire. The questionnaire and demographic data "
+            "you agreed to share were saved for research."
+        )
+        st.success(
+            "Your contact information was saved separately for future study updates or opportunities."
+        )
+    elif contact_saved and not saved_data:
+        st.success(
+            "Thank you for completing the questionnaire. Your contact information was saved "
+            "separately for future study updates or opportunities. No questionnaire or demographic "
+            "data were saved for research."
         )
     elif saved_data:
         st.success(
