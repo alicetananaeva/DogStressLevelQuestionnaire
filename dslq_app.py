@@ -1330,7 +1330,12 @@ def screen_sharing() -> None:
         cont = col_cont.form_submit_button("Continue →", type="primary")
 
     if back:
-        go("gh_duration")
+        # Land on the last GH item; if gh_item_index stays >= total, general_health immediately
+        # re-routes to sharing and Back appears broken.
+        dog_sex_back = st.session_state.get("dog_sex", "")
+        total_gh = len(get_gh_options(dog_sex_back))
+        st.session_state["gh_item_index"] = max(0, total_gh - 1)
+        go("general_health")
     if cont:
         st.session_state["choices"]["share_questionnaire_data"] = share_q
         st.session_state["choices"]["share_demographic_data"] = share_d
