@@ -1211,6 +1211,72 @@ def screen_result() -> None:
     st.markdown("**What does this mean?**")
     st.markdown(c(BAND_COPY_KEY[result.band]))
 
+    # Health module — readable list + wording based on gh_durations (stored in answers).
+    GH_CODE_LABEL = {
+        1: "coat / skin changes",
+        2: "weight loss",
+        3: "body or breath odor changes",
+        4: "gastrointestinal issues",
+        5: "reproductive-related changes",
+        6: "reproductive-related changes",
+    }
+    gh_durations = st.session_state.get("answers", {}).get("gh_durations", {})
+    reported: Dict[int, int] = {}
+    for k, v in (gh_durations or {}).items():
+        try:
+            reported[int(k)] = int(v)
+        except (ValueError, TypeError):
+            pass
+    positive = {code: dur for code, dur in reported.items() if dur != -1}
+
+    if positive:
+        def _labels_for(codes: List[int]) -> str:
+            """Deduplicated label list for a subset of codes."""
+            seen: List[str] = []
+            for code in sorted(codes):
+                lbl = GH_CODE_LABEL.get(code, "")
+                if lbl and lbl not in seen:
+                    seen.append(lbl)
+            return ", ".join(seen)
+
+        # Three duration bands (stored codes): 3 = over a month; 2 = less than a month;
+        # 1 = less than a week (code 4 "It varies / Other" is normalized to 1 before save).
+        chronic_codes = [c for c, d in positive.items() if d == 3]
+        within_month_codes = [c for c, d in positive.items() if d == 2]
+        week_or_varies_codes = [c for c, d in positive.items() if d == 1]
+
+        st.markdown("---")
+        st.markdown("**Health-related signs**")
+
+        if chronic_codes:
+            chronic_list = _labels_for(chronic_codes)
+            st.markdown(
+                f"Reported issues *(present for over a month)*: {chronic_list}. "
+                "These changes may be associated with chronic stress. "
+                "Health problems can both contribute to chronic stress and reflect it. "
+                "It may be worth paying particular attention to these signs."
+            )
+
+        # Less than a month (code 2) vs less than a week + varies (code 1; code 4→1).
+        if within_month_codes:
+            month_list = _labels_for(within_month_codes)
+            st.markdown(
+                f"Reported issues *(first observed less than a month ago)*: {month_list}. "
+                "These changes may be relevant when interpreting the current picture. "
+                "Health problems can both contribute to chronic stress and reflect it. "
+                "It may be worth paying particular attention to these signs."
+            )
+
+        if week_or_varies_codes:
+            week_list = _labels_for(week_or_varies_codes)
+            st.markdown(
+                f"Reported issues "
+                f"*(first noticed within about the past week, or varying in timing / other)*: {week_list}. "
+                "These changes may be relevant to the early development of chronic stress. "
+                "Health problems can both contribute to chronic stress and reflect it. "
+                "It may be worth paying particular attention to these signs."
+            )
+
     # Render Supabase diagnostics here (stable screen)
     render_supabase_diagnostics()
 

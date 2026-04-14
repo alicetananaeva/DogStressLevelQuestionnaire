@@ -2,7 +2,7 @@
 
 A Streamlit web application for assessing chronic stress levels in dogs using the **Dog Stress Level Questionnaire (DSLQ)** — a questionnaire developed within Human-Animal Interaction research.
 
-The app guides dog owners through a structured assessment and provides an automatically computed stress score with an evidence-based interpretation.
+The app guides **participants** (dog **caregivers** or **guardians**) through a structured assessment and provides an automatically computed stress score with an evidence-based interpretation.
 
 > **Independent research project** · Built with Python 3.10+ & Streamlit · MVP / in active development
 
@@ -13,9 +13,9 @@ The app guides dog owners through a structured assessment and provides an automa
 
 ## What is DSLQ?
 
-The DSLQ is a standardized owner-report questionnaire designed to measure chronic stress in companion dogs. It covers 37 behavioral and health-related items across multiple domains (symptom frequency, duration, and intensity), plus a general health module. The output is a continuous stress score mapped to four interpretation bands: *Normal*, *Elevated*, *High*, and *Ultra High*.
+The DSLQ is a standardized caregiver-report questionnaire designed to measure chronic stress in companion dogs. It covers 37 behavioral and health-related items across multiple domains (symptom frequency, duration, and intensity), plus a general health module. The output is a continuous stress score mapped to four interpretation bands: *Normal*, *Elevated*, *High*, and *Ultra High*.
 
-This app makes the questionnaire accessible in a clean web interface, computes the score automatically, and provides an interpretation with context for the owner.
+This app makes the questionnaire accessible in a clean web interface, computes the score automatically, and provides an interpretation with context for the participant.
 
 ---
 
@@ -26,9 +26,10 @@ This app makes the questionnaire accessible in a clean web interface, computes t
 - **Automatic scoring** — band thresholds loaded from CSV; some response mappings and weights defined in code
 - **Interpretation bands** with evidence-based copy
 - **Health flag** (`none` / `reported` / `chronic`) based on reported health signs
-- **Data export** as structured JSON (local storage, pluggable to cloud)
-- **Consent-gated data sharing** — participants control what they share
-- Single `.py` file, no database required to run locally
+- **Cloud storage (production)** — research data and contact data stored in **Supabase** (see below)
+- **Optional local fallback** — structured JSON under `dslq_sessions/` when `STORAGE_MODE = "local"` (development / no cloud)
+- **Consent-gated sharing** — research data only with questionnaire/demographic consent; **future-contact** opt-in stored separately
+- Single entry point: **`dslq_app.py`** (CSV-driven content; no separate DB process required locally)
 
 ---
 
@@ -61,6 +62,8 @@ streamlit run dslq_app.py
 
 The app will open at `http://localhost:8501`.
 
+For **deployed** use, configure Supabase credentials in Streamlit Cloud **Secrets** (see `.streamlit/secrets.toml.example`).
+
 ---
 
 ## Project Structure
@@ -68,7 +71,7 @@ The app will open at `http://localhost:8501`.
 ```
 DogStressLevelQuestionnaire/
 │
-├── dslq_app.py                     # Main Streamlit application (single file)
+├── dslq_app.py                     # Main Streamlit application
 │
 ├── Source/                         # CSV configuration files (scoring authority)
 │   ├── DSLQ_App_BehaviorItems.csv
@@ -77,10 +80,10 @@ DogStressLevelQuestionnaire/
 │   ├── DSLQ_App_ResponseOptions.csv
 │   └── DSLQ_App_ScoringConfig.csv
 │
-├── dslq_sessions/                  # Auto-created at runtime — local JSON exports
+├── dslq_sessions/                  # Optional — created only if local JSON storage is enabled
 │
 ├── .streamlit/
-│   └── secrets.toml.example        # Template for cloud secrets (no real credentials)
+│   └── secrets.toml.example        # Template for Supabase / secrets (no real credentials)
 │
 ├── requirements.txt
 ├── DATA_PRIVACY.md
@@ -95,17 +98,25 @@ DogStressLevelQuestionnaire/
 1. Fork or push this repo to your GitHub account (must be **public**)
 2. Go to [share.streamlit.io](https://share.streamlit.io) and sign in with GitHub
 3. Click **New app** → select this repo → set main file to `dslq_app.py`
-4. If using cloud storage (Supabase, etc.), add credentials under **Settings → Secrets** using the format in `.streamlit/secrets.toml.example`
+4. Add Supabase URL and key under **Settings → Secrets** (see `.streamlit/secrets.toml.example`)
 5. Click **Deploy**
+
+---
+
+## Data storage (Supabase)
+
+| Table | Contents |
+|-------|----------|
+| **`dslq_sessions`** | Research records when the participant consents to share questionnaire and/or demographic data (scores, answers, optional dog/human demographics). **Contact details are not stored in this table.** |
+| **`dslq_contacts`** | Name, email, and future-contact consent when the participant opts in on the contact screen — **independent** of research consent (contact-only path supported). |
+
+Local JSON under `dslq_sessions/` applies only when the app is configured for local storage mode (e.g. development).
 
 ---
 
 ## Data & Privacy
 
-Participation is voluntary. No personally identifiable information is collected unless the participant explicitly opts in on the contact screen.
-
-- Current MVP stores session data locally as JSON on the app host
-- Cloud storage via Supabase is planned for a future version
+Participation is voluntary. Research data is stored only with explicit consent. Contact information is stored only with a separate explicit opt-in on the contact screen.
 
 See [DATA_PRIVACY.md](DATA_PRIVACY.md) for full details.
 
@@ -128,12 +139,13 @@ Item weights follow a frequency × duration formula. Protective items (e.g., pla
 
 ## Tech Stack
 
-| Layer       | Tool                        |
-|-------------|-----------------------------|
-| UI & server | Streamlit                   |
-| Data        | pandas, CSV files           |
-| Storage     | Local JSON, `dslq_sessions/` folder (Supabase planned) |
-| Language    | Python 3.10+                |
+| Layer       | Tool |
+|-------------|------|
+| UI & server | Streamlit |
+| Data        | pandas, CSV files |
+| Storage (deployed) | **Supabase** (PostgreSQL via PostgREST) — `dslq_sessions`, `dslq_contacts` |
+| Storage (optional) | Local JSON (`dslq_sessions/`) when `STORAGE_MODE = "local"` |
+| Language    | Python 3.10+ (stdlib `urllib` for Supabase REST calls) |
 
 ---
 
@@ -149,7 +161,7 @@ Researcher, Human-Animal Interaction
 
 - MVP complete, in active development
 - Current deployment target: Streamlit Community Cloud
-- Cloud storage: planned via Supabase
+- **Cloud storage: Supabase** (research + contact tables as described above)
 - Tested with Python 3.10+
 
 ---

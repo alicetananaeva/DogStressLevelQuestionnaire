@@ -10,35 +10,47 @@ The DSLQ app collects information about a participant's **dog** through a standa
 |---|---|---|
 | Dog behavior responses | Answers to 37 behavioral items (frequency, context, duration) | Yes — needed for scoring |
 | Dog health signs | Answers to up to 6 general health items (sex-filtered) | Yes — needed for scoring |
-| Dog demographics | Species, breed, age, sex, neuter status | Optional, consent-gated |
-| Owner demographics | Relationship to dog, experience level | Optional, consent-gated |
-| Contact information | Name and email address | Optional, explicit opt-in only |
+| Dog demographics | e.g. dog’s name (optional field in app), breed, age, sex, neuter status | Optional, consent-gated |
+| Human demographics | Information about the caregiver / participant | Optional, consent-gated |
+| Contact information | Name and email for future study updates | Optional — only if the participant explicitly opts in on the contact screen |
 
 ## Consent model
 
-Participants are presented with an explicit consent screen before any optional data is stored. They may:
+Participants are presented with an explicit consent screen before any optional **research** data is stored. They may:
 
-- Complete the questionnaire and receive results **without sharing any data**
+- Complete the questionnaire and receive results **without sharing any research data**
 - Consent to share **dog questionnaire data** for research
-- Consent to share **demographic data** for research
-- Opt in to receive future study updates by providing contact information
+- Consent to share **human demographic data** for research
+- Independently opt in to **future contact** (name and email) on a separate contact screen
 
-All three are independent choices. The questionnaire result is shown regardless of consent decisions.
+The questionnaire result is shown regardless of these choices. **Research consent** and **future-contact consent** are independent: a participant may decline research sharing but still choose to leave contact details for future study updates (or the other way around).
 
 ## Data storage
 
-**Current version (local / MVP):**  
-Session data is stored as JSON files in the `dslq_sessions/` directory on the app host server. This folder is excluded from version control via `.gitignore`.
+### Production (deployed app)
 
-**Planned (cloud version):**  
-Consented session data will be stored in Supabase (PostgreSQL). Only consented records are transmitted. Contact information is stored separately from behavioral data.
+When the app is deployed with cloud storage enabled, data are sent to **Supabase** (PostgreSQL). Two logical tables are used:
+
+| Table | When data are stored | What is stored |
+|-------|----------------------|----------------|
+| **`dslq_sessions`** | Participant consents to share **questionnaire data** and/or **demographic data** for research | Session metadata, scores, behavioral and health answers, optional dog and human demographics (as consented). **Contact fields are not stored in this table.** |
+| **`dslq_contacts`** | Participant opts in to **future contact** and provides a non-empty email | Session id, timestamp, optional name, email, future-contact flag, app version |
+
+Behavioral/demographic research data and contact data are **separated by design** so that contact-only participation does not require research consent.
+
+### Local / development (optional)
+
+If the application is run with local storage mode, session data may be written as JSON files under a `dslq_sessions/` folder on the host. That folder is excluded from version control. This path is **not** the primary production model when Supabase is configured.
 
 ## What is NOT collected
 
-- IP addresses
+- IP addresses (not intentionally recorded by the app)
 - Browser or device fingerprints
 - Cookies or tracking identifiers
-- Any data from participants who do not consent to sharing
+- **Research** data (questionnaire answers, demographics for research) from participants who do not consent to sharing that category
+- Contact data **without** explicit opt-in on the contact screen and a valid email when future contact is requested
+
+**Note:** “No research data” is not the same as “no data at all.” If a participant only opts in to future contact, **only** the contact record (as above) may be stored — not questionnaire or demographic research content.
 
 ## Research context
 
