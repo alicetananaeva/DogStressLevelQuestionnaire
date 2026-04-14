@@ -1,8 +1,10 @@
 # Dog Stress Level Questionnaire (DSLQ)
 
-A Streamlit web application for assessing chronic stress levels in dogs using the **Dog Stress Level Questionnaire (DSLQ)** — a questionnaire developed within Human-Animal Interaction research.
+Dog Stress Level Questionnaire (DSLQ) is a psychometric instrument designed to assess chronic stress in companion dogs. It was developed in the Human-Animal Interaction Lab at Oregon State University under the supervision of Dr. Monique Udell, with Alisa Tananaeva as lead developer.
 
-The app guides **participants** (dog **caregivers** or **guardians**) through a structured assessment and provides an automatically computed stress score with an evidence-based interpretation.
+Initial evaluation showed acceptable internal consistency, good inter-rater and test-retest reliability, and evidence of construct, external, and criterion validity.
+
+DSLQ-App makes the questionnaire easier to use in practice, calculates the chronic stress score automatically, and returns an interpretable result. It also supports separate, consent-based data collection for research purposes.
 
 > **Independent research project** · Built with Python 3.10+ & Streamlit · MVP / in active development
 
@@ -11,11 +13,17 @@ The app guides **participants** (dog **caregivers** or **guardians**) through a 
 
 ---
 
+## Live app
+
+Open the deployed app here: [DSLQ-App](https://dslq-app.streamlit.app/)
+
+---
+
 ## What is DSLQ?
 
 The DSLQ is a standardized caregiver-report questionnaire designed to measure chronic stress in companion dogs. It covers 37 behavioral and health-related items across multiple domains (symptom frequency, duration, and intensity), plus a general health module. The output is a continuous stress score mapped to four interpretation bands: *Normal*, *Elevated*, *High*, and *Ultra High*.
 
-This app makes the questionnaire accessible in a clean web interface, computes the score automatically, and provides an interpretation with context for the participant.
+This app makes the questionnaire accessible in a clean web interface, computes the score automatically, and returns an interpretable result.
 
 ---
 
@@ -30,39 +38,6 @@ This app makes the questionnaire accessible in a clean web interface, computes t
 - **Optional local fallback** — structured JSON under `dslq_sessions/` when `STORAGE_MODE = "local"` (development / no cloud)
 - **Consent-gated sharing** — research data only with questionnaire/demographic consent; **future-contact** opt-in stored separately
 - Single entry point: **`dslq_app.py`** (CSV-driven content; no separate DB process required locally)
-
----
-
-## Screenshots
-
-> *(Add screenshots or a GIF of the app here)*
-
----
-
-## Quick Start (local)
-
-### 1. Clone the repo
-
-```bash
-git clone https://github.com/alicetananaeva/DogStressLevelQuestionnaire.git
-cd DogStressLevelQuestionnaire
-```
-
-### 2. Install dependencies
-
-```bash
-pip install -r requirements.txt
-```
-
-### 3. Run the app
-
-```bash
-streamlit run dslq_app.py
-```
-
-The app will open at `http://localhost:8501`.
-
-For **deployed** use, configure Supabase credentials in Streamlit Cloud **Secrets** (see `.streamlit/secrets.toml.example`).
 
 ---
 
