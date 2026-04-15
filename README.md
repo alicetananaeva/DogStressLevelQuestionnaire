@@ -68,16 +68,6 @@ DogStressLevelQuestionnaire/
 
 ---
 
-## Deploying to Streamlit Community Cloud
-
-1. Fork or push this repo to your GitHub account (must be **public**)
-2. Go to [share.streamlit.io](https://share.streamlit.io) and sign in with GitHub
-3. Click **New app** → select this repo → set main file to `dslq_app.py`
-4. Add Supabase URL and key under **Settings → Secrets** (see `.streamlit/secrets.toml.example`)
-5. Click **Deploy**
-
----
-
 ## Data storage (Supabase)
 
 | Table | Contents |
@@ -99,7 +89,7 @@ See [DATA_PRIVACY.md](DATA_PRIVACY.md) for full details.
 
 ## Scoring Logic
 
-Band thresholds are loaded from `DSLQ_App_ScoringConfig.csv`. Some response mappings and frequency weights are defined in code. Bands:
+Band thresholds are loaded from `DSLQ_App_ScoringConfig.csv`. Some response mappings and frequency weights are defined in code. Interpretation bands are derived from score thresholds established during the initial psychometric evaluation of the DSLQ. Bands:
 
 | Band       | Score range     |
 |------------|-----------------|
@@ -135,7 +125,7 @@ Researcher, Human-Animal Interaction
 ## Project Status
 
 - MVP complete, in active development
-- Current deployment target: Streamlit Community Cloud
+- Public deployment runs on Streamlit Community Cloud
 - **Cloud storage: Supabase** (research + contact tables as described above)
 - Tested with Python 3.10+
 
