@@ -34,9 +34,9 @@ This app makes the questionnaire accessible in a clean web interface, computes t
 - **Automatic scoring** — band thresholds loaded from CSV; some response mappings and weights defined in code
 - **Interpretation bands** with evidence-based copy
 - **Health flag** (`none` / `reported` / `chronic`) based on reported health signs
-- **Cloud storage (production)** — research data and contact data stored in **Supabase** (see below)
+- **Cloud storage (production)** — research data and contact data stored in Supabase (see below)
 - **Optional local fallback** — structured JSON under `dslq_sessions/` when `STORAGE_MODE = "local"` (development / no cloud)
-- **Consent-gated sharing** — research data only with questionnaire/demographic consent; **future-contact** opt-in stored separately
+- **Consent-gated sharing** — research data only with questionnaire/demographic consent; future-contact opt-in stored separately
 - Single entry point: **`dslq_app.py`** (CSV-driven content; no separate DB process required locally)
 
 ---
@@ -108,7 +108,7 @@ Item weights follow a frequency × duration formula. Protective items (e.g., pla
 |-------------|------|
 | UI & server | Streamlit |
 | Data        | pandas, CSV files |
-| Storage (deployed) | **Supabase** (PostgreSQL via PostgREST) — `dslq_sessions`, `dslq_contacts` |
+| Storage (deployed) | Supabase (PostgreSQL via PostgREST) — `dslq_sessions`, `dslq_contacts` |
 | Storage (optional) | Local JSON (`dslq_sessions/`) when `STORAGE_MODE = "local"` |
 | Language    | Python 3.10+ (stdlib `urllib` for Supabase REST calls) |
 
