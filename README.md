@@ -6,7 +6,7 @@ The validation procedure showed good internal consistency, inter-rater and test�
 
 DSLQ-App makes the questionnaire easier to use in practice, calculates the chronic stress score automatically, and returns an interpretable result. It also supports separate, consent-based data collection for research purposes.
 
-> **Independent research project** · Built with Python 3.10+ & Streamlit · MVP / in active development
+> **Research-based web application** · Built with Python 3.10+ & Streamlit · MVP / in active development
 
 [![Made with Streamlit](https://img.shields.io/badge/Made%20with-Streamlit-FF4B4B?logo=streamlit&logoColor=white)](https://streamlit.io)
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-blue?logo=python&logoColor=white)](https://python.org)
@@ -126,7 +126,7 @@ https://alicetananaeva.com
 
 - Functional web application deployed and in use.
 - Public deployment runs on Streamlit Community Cloud.
-- **Cloud storage: Supabase** (research + contact tables as described above)
+- Supabase-backed storage for research and contact data.
 - Tested with Python 3.10+
 
 ---
