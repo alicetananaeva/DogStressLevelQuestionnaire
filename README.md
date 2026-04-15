@@ -2,7 +2,7 @@
 
 Dog Stress Level Questionnaire (DSLQ) is a psychometric instrument designed to assess chronic stress in companion dogs. It was developed in the Human-Animal Interaction Lab at Oregon State University under the supervision of Dr. Monique Udell, with Alisa Tananaeva as lead developer.
 
-Initial evaluation showed acceptable internal consistency, good inter-rater and test-retest reliability, and evidence of construct, external, and criterion validity.
+The validation procedure showed good internal consistency, inter-rater and test–retest reliability, and evidence of construct, external, and criterion validity.
 
 DSLQ-App makes the questionnaire easier to use in practice, calculates the chronic stress score automatically, and returns an interpretable result. It also supports separate, consent-based data collection for research purposes.
 
@@ -89,7 +89,7 @@ See [DATA_PRIVACY.md](DATA_PRIVACY.md) for full details.
 
 ## Scoring Logic
 
-Band thresholds are loaded from `DSLQ_App_ScoringConfig.csv`. Some response mappings and frequency weights are defined in code. Interpretation bands are derived from score thresholds established during the initial psychometric evaluation of the DSLQ. Bands:
+Band thresholds are loaded from `DSLQ_App_ScoringConfig.csv`. Some response mappings and frequency weights are defined in code. Interpretation bands are derived from score thresholds established during the psychometric evaluation of the DSLQ. Bands:
 
 | Band       | Score range     |
 |------------|-----------------|
@@ -117,15 +117,15 @@ Item weights follow a frequency × duration formula. Protective items (e.g., pla
 ## Author
 
 **Alisa Tananaeva**  
-Researcher, Human-Animal Interaction  
-[GitHub](https://github.com/alicetananaeva) · [LinkedIn](https://www.linkedin.com/in/alisa-tananaeva-448356300/)
+Animal Behavior & Welfare Scientist 
+https://alicetananaeva.com
 
 ---
 
 ## Project Status
 
-- MVP complete, in active development
-- Public deployment runs on Streamlit Community Cloud
+- Functional web application deployed and in use.
+- Public deployment runs on Streamlit Community Cloud.
 - **Cloud storage: Supabase** (research + contact tables as described above)
 - Tested with Python 3.10+
 
