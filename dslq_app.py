@@ -1284,6 +1284,17 @@ def screen_result() -> None:
         f'<p class="disclaimer">{c("result_disclaimer", "This tool is intended as a screening aid and does not provide a clinical diagnosis.")}</p>',
         unsafe_allow_html=True,
     )
+    st.markdown(
+        """
+        <div class="disclaimer">
+            <p>The Dog Stress Level Questionnaire was developed and validated by Alice Tananaeva at the Human-Animal Interaction Lab, Oregon State University.</p>
+            <p><strong>Learn more or collaborate:</strong><br>
+            <a href="https://www.alicetananaeva.com" target="_blank">www.alicetananaeva.com</a><br>
+            <a href="https://thehumananimalbond.com/" target="_blank">thehumananimalbond.com</a></p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
     col_back, col_next = st.columns([1, 2])
     if col_back.button("← Back", key="result_back"):
@@ -1621,4 +1632,3 @@ PAGES = {
 
 page = st.session_state.get("page", "intro")
 PAGES.get(page, screen_intro)()
-
