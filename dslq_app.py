@@ -1289,7 +1289,7 @@ def screen_result() -> None:
     st.markdown(
         """
         <div class="result-note">
-            <p><em>The Dog Stress Level Questionnaire was developed and validated by Alice Tananaeva at the Human-Animal Interaction Lab, Oregon State University.</em></p>
+            <p><em>The Dog Stress Level Questionnaire was developed and validated by Alice Tananaeva under the supervision of Dr. Monique Udell at the Human-Animal Interaction Lab, Oregon State University.</em></p>
             <p><strong>Learn more or collaborate:</strong><br>
             <a href="https://www.alicetananaeva.com" target="_blank">www.alicetananaeva.com</a><br>
             <a href="https://thehumananimalbond.com/" target="_blank">thehumananimalbond.com</a></p>
