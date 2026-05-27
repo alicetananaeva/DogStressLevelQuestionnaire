@@ -15,6 +15,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Human demographics and future-contact fields removed from the active app flow
 
 ### Changed
+- Result-band interpretation copy is pinned in the app code to match the approved Monique wording even if Streamlit serves stale cached CSV data.
 - Documentation (**README**, **DATA_PRIVACY**, **CHANGELOG**) aligned with consented research-data-only storage
 
 ---

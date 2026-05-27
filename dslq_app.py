@@ -211,6 +211,43 @@ def build_scoring_thresholds(_df: pd.DataFrame) -> Dict[str, float]:
 # Load everything once
 _DATA = load_all_csvs()
 COPY = build_copy_map(_DATA["copy"])
+COPY.update(
+    {
+        "result_band_normal": (
+            "Your dog's chronic stress score falls within the normal range relative "
+            "to the current reference sample. This does not rule out stress in "
+            "specific situations, but it suggests that chronic stress-related signs "
+            "are not elevated overall compared to other dogs who have been evaluated "
+            "in this assessment to date."
+        ),
+        "result_band_elevated": (
+            "Your dog's chronic stress score is elevated relative to the current "
+            "reference sample, meaning that the stress score is slightly higher than "
+            "the average score of dogs that have been evaluated with this assessment "
+            "to date. It may be worth taking a closer look at your dog's daily "
+            "routine, environment, health, and opportunities to meet key needs, and "
+            "considering a consultation with a qualified dog behavior or welfare "
+            "professional if concerns persist."
+        ),
+        "result_band_high": (
+            "Your dog's chronic stress score is high relative to the current "
+            "reference sample, meaning that the stress score is higher than the "
+            "average score of dogs that have been evaluated with this assessment to "
+            "date. It may be especially important to review their daily routine, "
+            "environment, health, and opportunities to meet key needs, and to "
+            "discuss any concerns with a qualified dog behavior or welfare "
+            "professional."
+        ),
+        "result_band_ultra_high": (
+            "Your dog's chronic stress score is higher than for most dogs, meeting "
+            "or exceeding the highest values observed in the current reference "
+            "sample. Talking to your veterinarian about possible sources of stress "
+            "and reviewing the reported behaviors and your dog's daily activities "
+            "with a qualified dog behavior or welfare professional is strongly "
+            "recommended."
+        ),
+    }
+)
 OPT_SETS = build_option_sets(_DATA["options"])
 THRESHOLDS = build_scoring_thresholds(_DATA["config"])
 BEHAVIOR_DF = _DATA["behavior"].sort_values("question_number").reset_index(drop=True)
