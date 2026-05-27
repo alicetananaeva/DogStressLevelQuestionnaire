@@ -5,8 +5,8 @@ dslq_app.py
 Dog Stress Level Questionnaire (DSLQ) — Streamlit application.
 
 Administers the questionnaire, computes the chronic stress score, and optionally
-persists records to Supabase (`dslq_sessions` for research data, `dslq_contacts`
-for future-contact details). Supabase diagnostics are stored in `st.session_state`
+persists records to Supabase (`dslq_sessions` for research data).
+Supabase diagnostics are stored in `st.session_state`
 and shown on the Result / Completion screens so errors do not disappear on rerun.
 
 Input files (relative paths)
@@ -334,25 +334,6 @@ def _normalize_gh_duration(duration_code: int) -> int:
     return int(duration_code)
 
 
-def _is_valid_email_simple(email: str) -> bool:
-    """Practical email check without heavy regex (no spaces; local@domain with dot in domain)."""
-    e = str(email or "")
-    if not e or e.strip() != e:
-        return False
-    if " " in e:
-        return False
-    if "@" not in e:
-        return False
-    local, domain = e.split("@", 1)
-    if not local or not domain:
-        return False
-    if "." not in domain:
-        return False
-    if domain.startswith(".") or domain.endswith(".") or ".." in domain:
-        return False
-    return True
-
-
 # ─────────────────────────────────────────────
 # 4. SCORING ENGINE  (Doc4 + Doc6)
 # ─────────────────────────────────────────────
@@ -487,29 +468,6 @@ def compute_score(answers: Dict[str, Any]) -> ScoreResult:
 
 STORAGE_MODE = "supabase"  # "none" | "local" | "supabase"
 
-# Human optional fields that belong only on the contact screen (not stored in human_demographics).
-HUMAN_DEMO_EXCLUDED_FIELD_KEYS = frozenset(
-    {
-        "contact_name",
-        "contact_email",
-        "first_name",
-        "last_name",
-        "surname",
-        "human_first_name",
-        "human_last_name",
-        "participant_name",
-        "owner_name",
-        "human_name",
-        "corvallis_distance",  # legacy; not in human demographics; ignore if present in CSV
-    }
-)
-
-
-def _human_demo_for_export(human_demo: Dict[str, Any]) -> Dict[str, Any]:
-    """Strip contact/name fields so human_demographics never duplicates contact data."""
-    return {k: v for k, v in human_demo.items() if k not in HUMAN_DEMO_EXCLUDED_FIELD_KEYS}
-
-
 def _set_supabase_diag(error: Optional[str], traceback_text: Optional[str]) -> None:
     """Persist Supabase diagnostics in session state for later screens."""
     if error:
@@ -520,18 +478,6 @@ def _set_supabase_diag(error: Optional[str], traceback_text: Optional[str]) -> N
         st.session_state["supabase_traceback"] = str(traceback_text)
     else:
         st.session_state["supabase_traceback"] = None
-
-
-def _set_supabase_contact_diag(error: Optional[str], traceback_text: Optional[str]) -> None:
-    """Persist Supabase contact-table diagnostics in session state."""
-    if error:
-        st.session_state["supabase_contact_error"] = str(error)
-    else:
-        st.session_state["supabase_contact_error"] = None
-    if traceback_text:
-        st.session_state["supabase_contact_traceback"] = str(traceback_text)
-    else:
-        st.session_state["supabase_contact_traceback"] = None
 
 
 def _supabase_insert(payload: Dict[str, Any]) -> bool:
@@ -549,7 +495,6 @@ def _supabase_insert(payload: Dict[str, Any]) -> bool:
         url = secrets["url"].rstrip("/") + "/rest/v1/dslq_sessions"
         key = secrets["key"]
         raw = payload.get("raw_answers_json", {})
-        # Contact data lives only in table `dslq_contacts`; do not store contact_details here.
         record = {
             "session_id": payload.get("session_id"),
             "app_version": payload.get("app_version"),
@@ -562,12 +507,8 @@ def _supabase_insert(payload: Dict[str, Any]) -> bool:
             "general_health_answers": raw.get("general_health_answers"),
             "research_choices": payload.get("research_choices"),
             "dog_demographics": payload.get("dog_demographics"),
-            "human_demographics": payload.get("human_demographics"),
             "consented_dog": bool(
                 (payload.get("research_choices") or {}).get("share_questionnaire_data")
-            ),
-            "consented_demo": bool(
-                (payload.get("research_choices") or {}).get("share_demographic_data")
             ),
         }
         data = json.dumps(record, ensure_ascii=False, default=str).encode("utf-8")
@@ -636,105 +577,10 @@ def persist_session(payload: Dict[str, Any]) -> Optional[Path]:
         return None
 
 
-def _supabase_insert_contact(payload: Dict[str, Any]) -> bool:
-    """Insert one contact record into Supabase table `dslq_contacts`.
-
-    This is independent from research consent and must only contain contact data.
-    """
-    try:
-        import urllib.error
-        import urllib.request
-
-        secrets = st.secrets["supabase"]
-        url = secrets["url"].rstrip("/") + "/rest/v1/dslq_contacts"
-        key = secrets["key"]
-
-        contact = payload.get("contact_details") or {}
-        record = {
-            "session_id": payload.get("session_id"),
-            "created_at": payload.get("created_at"),
-            "name": contact.get("contact_name") or None,
-            "email": contact.get("contact_email") or None,
-            "consented_future_contact": bool((payload.get("research_choices") or {}).get("future_contact")),
-            "app_version": payload.get("app_version"),
-        }
-
-        data = json.dumps(record, ensure_ascii=False, default=str).encode("utf-8")
-        req = urllib.request.Request(
-            url,
-            data=data,
-            method="POST",
-            headers={
-                "Content-Type": "application/json",
-                "Accept": "application/json",
-                "apikey": key,
-                "Authorization": f"Bearer {key}",
-                "Prefer": "return=minimal",
-            },
-        )
-        with urllib.request.urlopen(req, timeout=10) as resp:
-            ok = resp.status in (200, 201)
-            if ok:
-                _set_supabase_contact_diag(None, None)
-            else:
-                _set_supabase_contact_diag(
-                    f"Supabase contact insert failed (HTTP {resp.status}).",
-                    None,
-                )
-            return ok
-    except urllib.error.HTTPError as e:
-        body_text = ""
-        try:
-            body_bytes = e.read()
-            body_text = body_bytes.decode("utf-8", errors="replace") if body_bytes else ""
-        except Exception:
-            body_text = ""
-
-        detail = body_text.strip() if body_text.strip() else "(empty response body)"
-        _set_supabase_contact_diag(
-            f"Supabase contact insert failed: HTTP {e.code} {e.reason}. Response: {detail}",
-            None,
-        )
-        return False
-    except Exception as e:
-        import traceback
-
-        _set_supabase_contact_diag(
-            f"Supabase contact insert failed: {e}",
-            traceback.format_exc(),
-        )
-        return False
-
-
-def persist_contact(payload: Dict[str, Any]) -> None:
-    """Persist contact details to Supabase if eligible.
-
-    Rules:
-    - Save to `dslq_contacts` if future_contact == True and email is non-empty.
-    - Must work independently from research consent.
-    """
-    if STORAGE_MODE != "supabase":
-        st.session_state["supabase_contact_insert_ok"] = None
-        _set_supabase_contact_diag(None, None)
-        return
-
-    contact = payload.get("contact_details") or {}
-    wants = bool((payload.get("research_choices") or {}).get("future_contact"))
-    email = str(contact.get("contact_email") or "").strip()
-
-    if wants and email:
-        st.session_state["supabase_contact_insert_ok"] = _supabase_insert_contact(payload)
-    else:
-        st.session_state["supabase_contact_insert_ok"] = None
-        _set_supabase_contact_diag(None, None)
-
-
 def build_export(
     result: ScoreResult,
     answers: Dict[str, Any],
     dog_demo: Dict,
-    human_demo: Dict,
-    contact: Dict,
     choices: Dict,
 ) -> Dict[str, Any]:
     # Keys that belong to general health (excluded from behavior_answers)
@@ -763,9 +609,6 @@ def build_export(
         },
         "research_choices": choices,
         "dog_demographics": dog_demo,
-        "human_demographics": _human_demo_for_export(human_demo),
-        # Kept for contact insert + local JSON; not written to Supabase dslq_sessions.
-        "contact_details": contact,
     }
 
 
@@ -781,12 +624,8 @@ def init_state() -> None:
         "answers": {},
         "score_result": None,
         "dog_demo": {},
-        "human_demo": {},
-        "contact": {},
         "choices": {
             "share_questionnaire_data": False,
-            "share_demographic_data": False,
-            "future_contact": False,
         },
         "export_blob": None,
         "saved_path": None,
@@ -799,10 +638,6 @@ def init_state() -> None:
         "supabase_error": None,
         "supabase_traceback": None,
         "supabase_insert_ok": None,
-        # Supabase diagnostics for contact table
-        "supabase_contact_error": None,
-        "supabase_contact_traceback": None,
-        "supabase_contact_insert_ok": None,
     }
     for k, v in defaults.items():
         if k not in st.session_state:
@@ -857,7 +692,6 @@ def render_scale(score: float, scale_pos: float) -> None:
 
 def render_supabase_diagnostics() -> None:
     """Render stored Supabase diagnostics (if any) on stable screens."""
-    # Show session and contact errors separately (success on one must not hide failure on the other).
     err = st.session_state.get("supabase_error")
     tb = st.session_state.get("supabase_traceback")
 
@@ -868,17 +702,6 @@ def render_supabase_diagnostics() -> None:
             st.error(err)
         if tb:
             st.code(tb)
-
-    contact_err = st.session_state.get("supabase_contact_error")
-    contact_tb = st.session_state.get("supabase_contact_traceback")
-
-    if contact_err or contact_tb:
-        st.markdown("---")
-        st.markdown("### Supabase contact diagnostics")
-        if contact_err:
-            st.error(contact_err)
-        if contact_tb:
-            st.code(contact_tb)
 
 
 # ─────────────────────────────────────────────
@@ -1301,20 +1124,20 @@ def screen_result() -> None:
     col_back, col_next = st.columns([1, 2])
     if col_back.button("← Back", key="result_back"):
         choices = st.session_state.get("choices", {})
-        if choices.get("share_questionnaire_data") or choices.get("share_demographic_data"):
+        if choices.get("share_questionnaire_data"):
             go("demographics")
         else:
-            go("contact")
+            go("sharing")
     if col_next.button("Continue →", type="primary", key="result_next"):
         go("completion")
 
 
 def screen_sharing() -> None:
-    st.markdown("## Would you like to share your data for research?")
+    st.markdown("## Would you like to share your responses for research?")
     st.markdown(
         c(
             "save_data_body",
-            "Sharing your data is optional. You can receive your result whether or not you choose to share anything.",
+            "You are not required to share your responses to receive your result. If you choose to share data, the information you select may be stored securely and used for future research on pet well-being, behavior, and human-animal interactions.",
         )
     )
     st.markdown(
@@ -1322,8 +1145,8 @@ def screen_sharing() -> None:
         "<b>Optional Research Data Consent</b><br><br>"
         + c(
             "consent_optional_body",
-            "You are not required to share your answers to receive your result. "
-            "If you choose to share data, your responses will be used for research purposes only.",
+            "You are not required to share your answers or dog information to receive your result. "
+            "If you choose to share data, the information you select may be stored securely and used for future research on pet well-being, behavior, and human-animal interactions. Published results will be reported only in aggregate or de-identified form. You may skip any optional questions you do not wish to answer.",
         )
         + "</div>",
         unsafe_allow_html=True,
@@ -1331,12 +1154,8 @@ def screen_sharing() -> None:
 
     with st.form("sharing_form"):
         share_q = st.checkbox(
-            "I agree to share **my dog's** questionnaire data for future research related to dog well-being, behavior, or human-animal interactions.",
+            "I agree to share my questionnaire responses and information about my dog for future research on pet well-being, behavior, and human-animal interactions.",
             value=st.session_state["choices"]["share_questionnaire_data"],
-        )
-        share_d = st.checkbox(
-            "I agree to share demographic information about **myself** for future research related to dog well-being, behavior, or human-animal interactions.",
-            value=st.session_state["choices"]["share_demographic_data"],
         )
         col_back, col_cont = st.columns([1, 2])
         back = col_back.form_submit_button("← Back")
@@ -1351,139 +1170,71 @@ def screen_sharing() -> None:
         go("general_health")
     if cont:
         st.session_state["choices"]["share_questionnaire_data"] = share_q
-        st.session_state["choices"]["share_demographic_data"] = share_d
-        go("contact")
+        if share_q:
+            go("demographics")
+        else:
+            _wrap_up()
 
 
 def screen_demographics() -> None:
     choices = st.session_state["choices"]
-    share_q = choices["share_questionnaire_data"]
-    share_d = choices["share_demographic_data"]
     dog_demo = st.session_state["dog_demo"]
-    hum_demo = st.session_state["human_demo"]
-    contact = st.session_state["contact"]
 
     with st.form("demo_form"):
-        if share_q:
-            st.markdown(f"### {c('dog_demo_title', 'Optional Dog Demographics')}")
-            dog_rows = OPTIONAL_DF[
-                OPTIONAL_DF["section"] == "dog_demographics_optional"
-            ].sort_values("display_order")
-            for _, f in dog_rows.iterrows():
-                fk = str(f["field_key"])
-                qtxt = str(f["question_text"])
-                rtype = str(f["response_type"])
-                if rtype == "text":
-                    dog_demo[fk] = st.text_input(
-                        qtxt, value=dog_demo.get(fk, ""), key=f"dd_{fk}"
-                    )
-                elif rtype == "number":
-                    dog_demo[fk] = st.number_input(
-                        qtxt,
-                        min_value=0,
-                        step=1,
-                        value=int(dog_demo.get(fk, 0)),
-                        key=f"dd_{fk}",
-                    )
-                elif rtype == "single_select":
-                    opts = [o.strip() for o in str(f["options_pipe_delimited"]).split("|")]
-                    cur = dog_demo.get(fk, opts[0])
-                    dog_demo[fk] = st.selectbox(
-                        qtxt,
-                        options=opts,
-                        index=opts.index(cur) if cur in opts else 0,
-                        key=f"dd_{fk}",
-                    )
-                elif rtype == "single_select_plus_text":
-                    opts = [o.strip() for o in str(f["options_pipe_delimited"]).split("|")]
-                    cur = dog_demo.get(fk, opts[0])
-                    sel = st.selectbox(
-                        qtxt,
-                        options=opts,
-                        index=opts.index(cur) if cur in opts else 0,
-                        key=f"dd_{fk}_sel",
-                    )
-                    extra = st.text_input(
-                        "Details (if applicable):",
-                        value=dog_demo.get(f"{fk}_txt", ""),
-                        key=f"dd_{fk}_txt",
-                    )
-                    dog_demo[fk] = sel
-                    dog_demo[f"{fk}_txt"] = extra
-
-        if share_d:
-            st.markdown(f"### {c('human_demo_title', 'Optional Human Demographics')}")
-            # future_contact is collected on the contact screen (choices), not in human_demo.
-            fut_yes = bool(choices.get("future_contact"))
-            act_yes = hum_demo.get("human_dog_activity") == "Yes"
-            hum_rows = OPTIONAL_DF[
-                OPTIONAL_DF["section"] == "human_demographics_optional"
-            ].sort_values("display_order")
-
-            for _, f in hum_rows.iterrows():
-                fk = str(f["field_key"])
-                qtxt = str(f["question_text"])
-                rtype = str(f["response_type"])
-                show_if = str(f["show_if"]) if pd.notna(f.get("show_if")) else ""
-
-                # Names / contact identity belong only on the contact screen.
-                if fk in HUMAN_DEMO_EXCLUDED_FIELD_KEYS:
-                    continue
-
-                if "future_contact = Yes" in show_if and not fut_yes:
-                    continue
-                if "human_dog_activity = Yes" in show_if and not act_yes:
-                    continue
-
-                if rtype == "single_select":
-                    if fk == "future_contact":
-                        continue
-                    opts = [o.strip() for o in str(f["options_pipe_delimited"]).split("|")]
-                    cur = hum_demo.get(fk, opts[0])
-                    val = st.selectbox(
-                        qtxt,
-                        options=opts,
-                        index=opts.index(cur) if cur in opts else 0,
-                        key=f"hd_{fk}",
-                    )
-                    hum_demo[fk] = val
-                    if fk == "human_dog_activity":
-                        act_yes = val == "Yes"
-                elif rtype == "multi_select":
-                    opts = [o.strip() for o in str(f["options_pipe_delimited"]).split("|")]
-                    hum_demo[fk] = st.multiselect(
-                        qtxt,
-                        options=opts,
-                        default=hum_demo.get(fk, []),
-                        key=f"hd_{fk}",
-                    )
-                elif rtype == "single_select_plus_multiselect":
-                    opts = [o.strip() for o in str(f["options_pipe_delimited"]).split("|")]
-                    cur = hum_demo.get(fk, opts[0])
-                    val = st.selectbox(
-                        qtxt,
-                        options=opts,
-                        index=opts.index(cur) if cur in opts else 0,
-                        key=f"hd_{fk}",
-                    )
-                    hum_demo[fk] = val
-                    if fk == "human_dog_activity":
-                        act_yes = val == "Yes"
-                elif rtype in ("text", "email"):
-                    hum_demo[fk] = st.text_input(
-                        qtxt, value=hum_demo.get(fk, ""), key=f"hd_{fk}"
-                    )
+        st.markdown(f"### {c('dog_demo_title', 'Dog Information')}")
+        dog_rows = OPTIONAL_DF[
+            OPTIONAL_DF["section"] == "dog_demographics_optional"
+        ].sort_values("display_order")
+        for _, f in dog_rows.iterrows():
+            fk = str(f["field_key"])
+            qtxt = str(f["question_text"])
+            rtype = str(f["response_type"])
+            if rtype == "text":
+                dog_demo[fk] = st.text_input(
+                    qtxt, value=dog_demo.get(fk, ""), key=f"dd_{fk}"
+                )
+            elif rtype == "number":
+                dog_demo[fk] = st.number_input(
+                    qtxt,
+                    min_value=0,
+                    step=1,
+                    value=int(dog_demo.get(fk, 0)),
+                    key=f"dd_{fk}",
+                )
+            elif rtype == "single_select":
+                opts = [o.strip() for o in str(f["options_pipe_delimited"]).split("|")]
+                cur = dog_demo.get(fk, opts[0])
+                dog_demo[fk] = st.selectbox(
+                    qtxt,
+                    options=opts,
+                    index=opts.index(cur) if cur in opts else 0,
+                    key=f"dd_{fk}",
+                )
+            elif rtype == "single_select_plus_text":
+                opts = [o.strip() for o in str(f["options_pipe_delimited"]).split("|")]
+                cur = dog_demo.get(fk, opts[0])
+                sel = st.selectbox(
+                    qtxt,
+                    options=opts,
+                    index=opts.index(cur) if cur in opts else 0,
+                    key=f"dd_{fk}_sel",
+                )
+                extra = st.text_input(
+                    "Details (if applicable):",
+                    value=dog_demo.get(f"{fk}_txt", ""),
+                    key=f"dd_{fk}_txt",
+                )
+                dog_demo[fk] = sel
+                dog_demo[f"{fk}_txt"] = extra
 
         col_back, col_finish = st.columns([1, 2])
         back = col_back.form_submit_button("← Back")
         finish = col_finish.form_submit_button("Continue →", type="primary")
 
     if back:
-        go("contact")
+        go("sharing")
     if finish:
         st.session_state["dog_demo"] = dog_demo
-        st.session_state["human_demo"] = hum_demo
-        st.session_state["contact"] = contact
         st.session_state["choices"] = choices
         _wrap_up()
 
@@ -1496,110 +1247,25 @@ def _wrap_up() -> None:
         result,
         st.session_state["answers"],
         st.session_state["dog_demo"],
-        st.session_state["human_demo"],
-        st.session_state["contact"],
         choices,
     )
     st.session_state["export_blob"] = blob
-    if choices["share_questionnaire_data"] or choices["share_demographic_data"]:
+    if choices["share_questionnaire_data"]:
         saved = persist_session(blob)
         st.session_state["saved_path"] = str(saved) if saved else None
 
-    # Contact saving must be independent from research consent.
-    persist_contact(blob)
     go("result")
-
-
-def screen_contact() -> None:
-    contact = st.session_state.get("contact", {})
-    choices = st.session_state["choices"]
-
-    st.markdown("## Stay in touch")
-    st.markdown(
-        "Would you like to be notified about future study opportunities "
-        "or receive updates about study findings?"
-    )
-
-    wants_contact = st.radio(
-        "Select one:",
-        options=["No", "Yes"],
-        index=["No", "Yes"].index(contact.get("future_contact", "No")),
-        horizontal=True,
-        key="contact_radio",
-    )
-
-    name_val = contact.get("contact_name", "")
-    email_val = contact.get("contact_email", "")
-    if wants_contact == "Yes":
-        st.markdown("---")
-        name_val = st.text_input(
-            "Your name (first and last):",
-            value=contact.get("contact_name", ""),
-            key="contact_name_inp",
-        )
-        email_val = st.text_input(
-            "Your email address:",
-            value=contact.get("contact_email", ""),
-            key="contact_email_inp",
-        )
-
-    st.markdown("")
-    col_back, col_next = st.columns([1, 2])
-    back = col_back.button("← Back", key="contact_back")
-    nxt = col_next.button("Continue →", type="primary", key="contact_next")
-
-    if back:
-        go("sharing")
-    if nxt:
-        if wants_contact == "Yes":
-            if not str(email_val or "").strip():
-                st.error("Please enter an email address to be contacted in the future.")
-                st.stop()
-            if not _is_valid_email_simple(email_val):
-                st.error(
-                    "Please enter a valid email address (e.g., test@example.com). "
-                    "Spaces are not allowed."
-                )
-                st.stop()
-        choices["future_contact"] = wants_contact == "Yes"
-        contact["future_contact"] = wants_contact
-        contact["contact_name"] = name_val
-        contact["contact_email"] = email_val
-        st.session_state["contact"] = contact
-        st.session_state["choices"] = choices
-        share_q = choices.get("share_questionnaire_data", False)
-        share_d = choices.get("share_demographic_data", False)
-        if share_q or share_d:
-            go("demographics")
-        else:
-            _wrap_up()
 
 
 def screen_completion() -> None:
     choices = st.session_state["choices"]
     saved_path = st.session_state.get("saved_path")
     export_blob = st.session_state.get("export_blob")
-    saved_data = choices.get("share_questionnaire_data") or choices.get("share_demographic_data")
-    wants_contact = bool(choices.get("future_contact") and st.session_state["contact"].get("contact_email"))
-    contact_saved = st.session_state.get("supabase_contact_insert_ok") is True
+    saved_data = choices.get("share_questionnaire_data")
 
     st.markdown("## 🐾 Thank you!")
 
-    if saved_data and contact_saved:
-        st.success(
-            "Thank you for completing the questionnaire. The questionnaire and demographic data "
-            "you agreed to share were saved for research."
-        )
-        st.success(
-            "Your contact information was saved separately for future study updates or opportunities."
-        )
-    elif contact_saved and not saved_data:
-        st.success(
-            "Thank you for completing the questionnaire. Your contact information was saved "
-            "separately for future study updates or opportunities. No questionnaire or demographic "
-            "data were saved for research."
-        )
-    elif saved_data:
+    if saved_data:
         st.success(
             "Thank you for completing the questionnaire. The data you agreed to share were saved for research."
         )
@@ -1628,7 +1294,6 @@ PAGES = {
     "sharing": screen_sharing,
     "demographics": screen_demographics,
     "result": screen_result,
-    "contact": screen_contact,
     "completion": screen_completion,
 }
 

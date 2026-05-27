@@ -34,9 +34,9 @@ This app makes the questionnaire accessible in a clean web interface, computes t
 - **Automatic scoring** — band thresholds loaded from CSV; some response mappings and weights defined in code
 - **Interpretation bands** with evidence-based copy
 - **Health flag** (`none` / `reported` / `chronic`) based on reported health signs
-- **Cloud storage (production)** — research data and contact data stored in Supabase (see below)
+- **Cloud storage (production)** — consented research data stored in Supabase (see below)
 - **Optional local fallback** — structured JSON under `dslq_sessions/` when `STORAGE_MODE = "local"` (development / no cloud)
-- **Consent-gated sharing** — research data only with questionnaire/demographic consent; future-contact opt-in stored separately
+- **Consent-gated sharing** — research data only when participants consent to share questionnaire responses and dog information
 - Single entry point: **`dslq_app.py`** (CSV-driven content; no separate DB process required locally)
 
 ---
@@ -72,8 +72,7 @@ DogStressLevelQuestionnaire/
 
 | Table | Contents |
 |-------|----------|
-| **`dslq_sessions`** | Research records when the participant consents to share questionnaire and/or demographic data (scores, answers, optional dog/human demographics). **Contact details are not stored in this table.** |
-| **`dslq_contacts`** | Name, email, and future-contact consent when the participant opts in on the contact screen — **independent** of research consent (contact-only path supported). |
+| **`dslq_sessions`** | Research records when the participant consents to share questionnaire responses and dog information (scores, answers, optional dog demographics). |
 
 Local JSON under `dslq_sessions/` applies only when the app is configured for local storage mode (e.g. development).
 
@@ -81,7 +80,7 @@ Local JSON under `dslq_sessions/` applies only when the app is configured for lo
 
 ## Data & Privacy
 
-Participation is voluntary. Research data is stored only with explicit consent. Contact information is stored only with a separate explicit opt-in on the contact screen.
+Participation is voluntary. Research data is stored only with explicit consent. The current app does not collect human demographics or contact information.
 
 See [DATA_PRIVACY.md](DATA_PRIVACY.md) for full details.
 
@@ -108,7 +107,7 @@ Item weights follow a frequency × duration formula. Protective items (e.g., pla
 |-------------|------|
 | UI & server | Streamlit |
 | Data        | pandas, CSV files |
-| Storage (deployed) | Supabase (PostgreSQL via PostgREST) — `dslq_sessions`, `dslq_contacts` |
+| Storage (deployed) | Supabase (PostgreSQL via PostgREST) — `dslq_sessions` |
 | Storage (optional) | Local JSON (`dslq_sessions/`) when `STORAGE_MODE = "local"` |
 | Language    | Python 3.10+ (stdlib `urllib` for Supabase REST calls) |
 
@@ -126,7 +125,7 @@ https://alicetananaeva.com
 
 - Functional web application deployed and in use.
 - Public deployment runs on Streamlit Community Cloud.
-- Supabase-backed storage for research and contact data.
+- Supabase-backed storage for consented research data.
 - Tested with Python 3.10+
 
 ---
