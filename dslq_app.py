@@ -1120,7 +1120,7 @@ def screen_result() -> None:
             st.markdown(
                 f"**Present for over a month:** {chronic_list}. "
                 "These signs have been present for a relatively long time and may be more strongly associated with chronic stress. "
-                "If you have not already done so, it may be important to work with your veterinarian and a behavior or welfare professional."
+                "We recommend reviewing these results with your veterinarian and a behavior or welfare professional for additional guidance."
             )
 
         if within_month_codes:
@@ -1136,7 +1136,7 @@ def screen_result() -> None:
             st.markdown(
                 f"**First noticed within the past week, or varying in timing:** {week_list}. "
                 "These signs may be recent or inconsistent, but they can still matter. "
-                "If they repeat, persist, or become more noticeable, it may be worth seeking professional advice."
+                "If these signs are new, persistent, or worsening, or if you have new or worsening concerns about any of them, a veterinary check and consultation with behavior or welfare professional may be warranted."
             )
 
     # Render Supabase diagnostics here (stable screen)
