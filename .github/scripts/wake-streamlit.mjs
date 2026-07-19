@@ -2,7 +2,7 @@ import { chromium } from "playwright";
 
 const apps = [
   "https://dslq-app.streamlit.app/",
-  "https://ppw-app.streamlit.app/",
+  "https://pps-app.streamlit.app/",
   "https://dslq-ru.streamlit.app/",
 ];
 
