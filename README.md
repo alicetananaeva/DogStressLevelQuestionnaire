@@ -8,7 +8,7 @@ The web application administers the questionnaire, calculates the chronic stress
 
 [Open DSLQ on Cloudflare](https://dslq.dogperspective.com/)
 
-Class link for Dr. Udell's students: [DSLQ class version](https://dslq.dogperspective.com/?class=monique). After completion, this link displays a random confirmation code. Codes are stored without questionnaire answers or personal information in the separate `completion_codes` table.
+Class link for Dr. Udell's students: [DSLQ class version](https://dslq.dogperspective.com/?class=drudell). After completion, this link displays a random confirmation code. Codes are stored without questionnaire answers or personal information in the separate `completion_codes` table.
 
 ## Current architecture
 
