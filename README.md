@@ -8,7 +8,9 @@ The web application administers the questionnaire, calculates the chronic stress
 
 [Open DSLQ on Cloudflare](https://dslq.dogperspective.com/)
 
-Class link for Dr. Udell's students: [DSLQ class version](https://dslq.dogperspective.com/?class=drudell). After completion, this link displays a random confirmation code. Codes are stored without questionnaire answers or personal information in the separate `completion_codes` table.
+Class link for Dr. Udell's students: [DSLQ class version](https://dslq.dogperspective.com/?class=drudell). Consented questionnaire records receive the cohort label `drudell_fall_2026`. After viewing the result, students complete three required anonymous feedback ratings and receive a random confirmation code. Feedback, completion codes, and questionnaire responses are stored separately and cannot be linked to one another.
+
+Dr. Udell can verify PPS and DSLQ completion codes at [verify.dogperspective.com](https://verify.dogperspective.com/). The page reports only whether a code is valid and which questionnaire it belongs to.
 
 ## Current architecture
 
@@ -32,7 +34,7 @@ This deployment does not depend on Streamlit uptime or Supabase project activity
 
 ## Data storage
 
-The `dslq_sessions` D1 table stores consented research records: a random session ID, score and interpretation, item scores, behavioral and health answers, and optional dog information. No research record is created when a participant declines research storage. Class confirmation codes are stored separately in `completion_codes` and cannot be linked to questionnaire responses.
+The `dslq_sessions` D1 table stores consented research records: a random session ID, score and interpretation, item scores, behavioral and health answers, optional dog information, and an optional cohort label. No research record is created when a participant declines research storage. Class feedback is stored in `class_feedback`; confirmation codes are stored in `completion_codes`. Neither can be linked to questionnaire responses.
 
 See [DATA_PRIVACY.md](DATA_PRIVACY.md) for details.
 

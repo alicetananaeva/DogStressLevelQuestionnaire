@@ -4,6 +4,8 @@
 
 Participants can complete DSLQ and receive the same result whether they agree to research storage or decline. A response is sent to the storage API only after an explicit **Yes, share my responses for research** choice.
 
+The Dr. Udell class version also asks three required experience questions after showing the result. These ratings are stored as anonymous class feedback regardless of the research-storage choice. They are not linked to questionnaire answers or completion codes.
+
 ## Data stored with consent
 
 - A randomly generated response ID and submission time
@@ -13,6 +15,7 @@ Participants can complete DSLQ and receive the same result whether they agree to
 - Calculated score, interpretation band, health flag, and item scores
 - Optional dog information entered after consent, such as name, age, breed, weight range, neuter status, and household animals
 - The application version used for scoring
+- A cohort label for consented responses submitted through the Dr. Udell class link
 
 These records are stored in the `dslq_sessions` table in Cloudflare D1.
 
@@ -29,6 +32,8 @@ Cloudflare necessarily processes normal request metadata to deliver and protect 
 ## Declining consent
 
 When a participant chooses not to share, the result is calculated in the browser and no questionnaire or dog-information record is written to D1.
+
+Class feedback is stored separately in `class_feedback`. Completion codes are stored separately in `completion_codes`. Neither table contains a session ID or other field that can link it to a questionnaire response.
 
 ## Research context
 

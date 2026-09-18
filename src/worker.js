@@ -15,6 +15,14 @@ function isUuid(value) {
     && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
 }
 
+function cohortForClassKey(value) {
+  return value === "drudell" ? "drudell_fall_2026" : null;
+}
+
+function validRating(value) {
+  return Number.isInteger(value) && value >= 1 && value <= 5;
+}
+
 function completionCode() {
   const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   const part = () => Array.from(crypto.getRandomValues(new Uint8Array(4)), (value) => alphabet[value % alphabet.length]).join("");
@@ -43,6 +51,39 @@ async function saveCompletion(request, env) {
   return json({ error: "The completion code could not be generated." }, 503);
 }
 
+async function saveFeedback(request, env) {
+  let payload;
+  try {
+    payload = await request.json();
+  } catch {
+    return json({ error: "Invalid JSON." }, 400);
+  }
+  const cohortKey = cohortForClassKey(payload?.classKey);
+  if (!cohortKey) return json({ error: "Unknown class." }, 400);
+  if (!isUuid(payload.feedbackId)
+    || !validRating(payload.enjoyment)
+    || !validRating(payload.clarity)
+    || !validRating(payload.resultUsefulness)) {
+    return json({ error: "Invalid feedback." }, 400);
+  }
+  try {
+    const saved = await env.DB.prepare(`
+      INSERT OR IGNORE INTO class_feedback (
+        feedback_id, cohort_key, enjoyment, clarity, result_usefulness
+      ) VALUES (?, ?, ?, ?, ?)
+    `).bind(
+      payload.feedbackId,
+      cohortKey,
+      payload.enjoyment,
+      payload.clarity,
+      payload.resultUsefulness,
+    ).run();
+    return json({ saved: true, duplicate: saved.meta?.changes === 0 });
+  } catch {
+    return json({ error: "The class feedback could not be saved." }, 503);
+  }
+}
+
 function safeDemographics(value) {
   if (!value || typeof value !== "object" || Array.isArray(value)) return {};
   const allowed = ["dog_name", "dog_age_years", "dog_age_months", "dog_lives_with_you", "dog_sex", "dog_neuter_status", "dog_breed", "dog_weight", "dogs_in_household", "other_animals", "other_animals_text"];
@@ -64,6 +105,7 @@ async function saveSession(request, env) {
 
   const demographics = safeDemographics(payload.dogDemographics);
   const result = calculateDslq(payload.dogSex, payload.behaviorAnswers, payload.healthDurations);
+  const cohortKey = cohortForClassKey(payload.classKey);
   const selectedHealthCodes = Object.entries(payload.healthDurations).filter(([, value]) => value !== -1).map(([code]) => Number(code));
   const generalHealth = { Dog_Symptoms: selectedHealthCodes, gh_durations: payload.healthDurations };
   const query = env.DB.prepare(`
@@ -71,8 +113,8 @@ async function saveSession(request, env) {
       session_id, app_version, consented_dog, dog_sex,
       dslq_chronic_score, interpretation_band, health_flag, visual_scale_pos,
       item_scores_json, behavior_answers_json, general_health_answers_json,
-      research_choices_json, dog_demographics_json
-    ) VALUES (?, ?, 1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      research_choices_json, dog_demographics_json, cohort_key
+    ) VALUES (?, ?, 1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).bind(
     payload.sessionId,
     APP_VERSION,
@@ -86,6 +128,7 @@ async function saveSession(request, env) {
     JSON.stringify(generalHealth),
     JSON.stringify({ share_questionnaire_data: true }),
     JSON.stringify(demographics),
+    cohortKey,
   );
 
   try {
@@ -109,6 +152,7 @@ export default {
     }
     if (url.pathname === "/api/sessions" && request.method === "POST") return saveSession(request, env);
     if (url.pathname === "/api/completions" && request.method === "POST") return saveCompletion(request, env);
+    if (url.pathname === "/api/feedback" && request.method === "POST") return saveFeedback(request, env);
     if (url.pathname.startsWith("/api/")) return json({ error: "Not found." }, 404);
     return env.ASSETS.fetch(request);
   },

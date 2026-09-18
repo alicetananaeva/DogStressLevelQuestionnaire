@@ -19,6 +19,7 @@
     <section id="intro-screen" class="screen hero" tabindex="-1">
       <h1>Dog Stress Level Questionnaire (DSLQ)</h1>
       <p class="lead">This questionnaire asks about behavioral signs that may be associated with chronic stress in your dog. Please answer as honestly and accurately as possible. There are no “good” or “bad” answers. Your result will be shown only to you. At the end, we will ask separately whether you would like to share your answers for research purposes.</p>
+      <p id="class-pilot-note" class="class-pilot-note hidden">This class version includes three brief required questions about your experience after you view your result. These anonymous ratings are stored separately from your questionnaire responses and completion code.</p>
       <p><strong>Most people complete this questionnaire in about 10-15 minutes.</strong></p>
       <p><strong>If you live with more than one dog, please choose one dog and answer for that dog only.</strong></p>
       <div class="notice"><strong>Important:</strong> for behavior items, please choose “Yes” even if you observe the behavior only occasionally. If you choose “Yes”, you will usually be asked about frequency and duration.</div>
@@ -69,6 +70,7 @@
       <div class="eyebrow">Optional research contribution</div>
       <h1>Would you like to share your responses?</h1>
       <p>You are not required to share your responses to receive your result. If you choose to share data, the information you select may be stored securely and used for future research on pet well-being, behavior, and human-animal interactions.</p>
+      <p id="class-consent-note" class="class-pilot-note hidden">This choice applies only to your questionnaire responses. The three class feedback ratings will be saved separately either way.</p>
       <div class="privacy-card"><h2>Optional Research Data Consent</h2><p>You are not required to share your answers or dog information to receive your result. If you choose to share data, the information you select may be stored securely and used for future research on pet well-being, behavior, and human-animal interactions. Published results will be reported only in aggregate or de-identified form. You may skip any optional questions you do not wish to answer.</p></div>
       <fieldset id="consent-options" class="choice-list">
         <legend class="sr-only">Research data sharing choice</legend>
@@ -102,6 +104,46 @@
         <div class="meaning-panel"><h1>What does this mean?</h1><p id="band-copy"></p></div>
       </div>
       <div id="save-status" class="status hidden" role="status"></div>
+      <form id="class-feedback" class="feedback-card hidden">
+        <div class="eyebrow">Brief class feedback</div>
+        <h2>Tell us about your experience</h2>
+        <p>Please answer these three questions to receive your class completion code. This anonymous feedback is saved separately from your questionnaire responses and code.</p>
+        <div class="feedback-grid">
+          <label>Overall, how enjoyable was it to complete this questionnaire?
+            <select name="enjoyment" required>
+              <option value="">Select one</option>
+              <option value="1">1 — Not at all enjoyable</option>
+              <option value="2">2 — Slightly enjoyable</option>
+              <option value="3">3 — Moderately enjoyable</option>
+              <option value="4">4 — Very enjoyable</option>
+              <option value="5">5 — Extremely enjoyable</option>
+            </select>
+          </label>
+          <label>How clear were the questionnaire instructions and items?
+            <select name="clarity" required>
+              <option value="">Select one</option>
+              <option value="1">1 — Not at all clear</option>
+              <option value="2">2 — Slightly clear</option>
+              <option value="3">3 — Moderately clear</option>
+              <option value="4">4 — Very clear</option>
+              <option value="5">5 — Extremely clear</option>
+            </select>
+          </label>
+          <label>How useful or meaningful did you find the result provided at the end?
+            <select name="resultUsefulness" required>
+              <option value="">Select one</option>
+              <option value="1">1 — Not at all useful</option>
+              <option value="2">2 — Slightly useful</option>
+              <option value="3">3 — Moderately useful</option>
+              <option value="4">4 — Very useful</option>
+              <option value="5">5 — Extremely useful</option>
+            </select>
+          </label>
+        </div>
+        <p id="feedback-error" class="error hidden" role="alert">Please answer all three questions.</p>
+        <button id="feedback-submit" class="button primary" type="submit">Submit feedback and get code →</button>
+      </form>
+
       <div id="completion-card" class="completion-card hidden" role="status">
         <div><strong>Class completion code</strong><p>Send this code to your instructor to confirm that you completed the questionnaire. It is stored separately from your questionnaire answers.</p></div>
         <code id="completion-code"></code>
