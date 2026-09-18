@@ -30,7 +30,6 @@ const parsed = JSON.parse(await readFile(inputPath, "utf8"));
 if (!Array.isArray(parsed)) throw new Error("The export must be a JSON array of dslq_sessions rows.");
 
 const rows = parsed.filter((row) => row && (row.consented_dog === true || row.consented_dog === 1));
-console.log("BEGIN TRANSACTION;");
 
 for (const row of rows) {
   const demographics = objectValue(row.dog_demographics);
@@ -54,5 +53,4 @@ for (const row of rows) {
   console.log(`INSERT OR IGNORE INTO dslq_sessions (session_id, created_at, app_version, consented_dog, dog_sex, dslq_chronic_score, interpretation_band, health_flag, visual_scale_pos, item_scores_json, behavior_answers_json, general_health_answers_json, research_choices_json, dog_demographics_json) VALUES (${values.join(", ")});`);
 }
 
-console.log("COMMIT;");
 console.error(`Prepared ${rows.length} consented row(s) from ${parsed.length} exported row(s).`);
