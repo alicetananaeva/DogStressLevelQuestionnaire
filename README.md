@@ -8,6 +8,8 @@ The web application administers the questionnaire, calculates the chronic stress
 
 [Open DSLQ on Cloudflare](https://dslq.dogperspective.com/)
 
+Class link for Dr. Udell's students: [DSLQ class version](https://dslq.dogperspective.com/?class=monique). After completion, this link displays a random confirmation code. Codes are stored without questionnaire answers or personal information in the separate `completion_codes` table.
+
 ## Current architecture
 
 - **Interface:** accessible vanilla HTML, CSS, and JavaScript served by Cloudflare Workers Static Assets
@@ -30,7 +32,7 @@ This deployment does not depend on Streamlit uptime or Supabase project activity
 
 ## Data storage
 
-The `dslq_sessions` D1 table stores consented research records: a random session ID, score and interpretation, item scores, behavioral and health answers, and optional dog information. No record is created when a participant declines research storage.
+The `dslq_sessions` D1 table stores consented research records: a random session ID, score and interpretation, item scores, behavioral and health answers, and optional dog information. No research record is created when a participant declines research storage. Class confirmation codes are stored separately in `completion_codes` and cannot be linked to questionnaire responses.
 
 See [DATA_PRIVACY.md](DATA_PRIVACY.md) for details.
 

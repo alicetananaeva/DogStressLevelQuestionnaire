@@ -2,6 +2,8 @@ import { APP_VERSION, BEHAVIOR_ITEMS, DAYS_OPTIONS, DURATION_OPTIONS, FREQUENCY_
 
 const screens = [...document.querySelectorAll(".screen")];
 const state = { sessionId: crypto.randomUUID(), dogSex: "", behaviorAnswers: {}, behaviorIndex: 0, healthDurations: {}, healthIndex: 0, consent: false, dogDemographics: {} };
+let completionCodePromise = null;
+const classKey = new URLSearchParams(window.location.search).get("class");
 
 const BAND_LABELS = { normal:"Normal", elevated:"Elevated", high:"High", ultra_high:"Extremely High" };
 const BAND_COPY = {
@@ -68,9 +70,11 @@ function healthResultHtml(){ const groups={3:[],2:[],1:[]}; for(const [code,dura
 
 function renderResult(result){ document.getElementById("score-number").textContent=result.total.toFixed(2); const badge=document.getElementById("band-badge"); badge.className=`band-badge band-${result.band}`; badge.textContent=BAND_LABELS[result.band]; document.getElementById("band-copy").textContent=BAND_COPY[result.band]; document.getElementById("scale-value").textContent=`Score ${result.total.toFixed(2)} of ${THRESHOLDS.maxObserved}`; document.getElementById("scale-marker").style.left=`${result.scalePos*100}%`; const healthHtml=healthResultHtml(); document.getElementById("health-result").classList.toggle("hidden",!healthHtml); document.getElementById("health-copy").innerHTML=healthHtml; }
 
+async function showCompletionCode(){if(classKey!=="monique")return;const card=document.getElementById("completion-card");const code=document.getElementById("completion-code");card.classList.remove("hidden");code.textContent="Generating…";if(!completionCodePromise){completionCodePromise=fetch("/api/completions",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({classKey})}).then(async(response)=>{if(!response.ok)throw new Error("completion code failed");return(await response.json()).code;});}try{code.textContent=await completionCodePromise;}catch{code.textContent="Unavailable";}}
+
 async function saveResponse(result){ const status=document.getElementById("save-status"); status.className="status";status.textContent="Saving the information you agreed to share…"; try{ const response=await fetch("/api/sessions",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({sessionId:state.sessionId,appVersion:APP_VERSION,consent:true,dogSex:state.dogSex,behaviorAnswers:state.behaviorAnswers,healthDurations:state.healthDurations,dogDemographics:state.dogDemographics})}); if(!response.ok)throw new Error(); const saved=await response.json(); if(saved.result.total!==result.total||saved.result.band!==result.band)throw new Error();status.textContent="Thank you—the information you agreed to share was saved for research.";}catch{status.classList.add("warning");status.textContent="Your result was calculated, but the research copy could not be saved. No action is required from you.";} }
 
-async function finish(){ const result=calculateDslq(state.dogSex,state.behaviorAnswers,state.healthDurations);renderResult(result);document.getElementById("save-status").classList.add("hidden");showScreen("result-screen");if(state.consent)await saveResponse(result); }
+async function finish(){ const result=calculateDslq(state.dogSex,state.behaviorAnswers,state.healthDurations);renderResult(result);document.getElementById("save-status").classList.add("hidden");document.getElementById("completion-card").classList.add("hidden");showScreen("result-screen");const tasks=[showCompletionCode()];if(state.consent)tasks.push(saveResponse(result));await Promise.allSettled(tasks); }
 
 document.getElementById("start-button").addEventListener("click",()=>showScreen("sex-screen"));
 document.getElementById("sex-next").addEventListener("click",()=>{const sex=document.querySelector('input[name="dog-sex"]:checked')?.value;if(!sex){document.getElementById("sex-error").classList.remove("hidden");return;}state.dogSex=sex;state.behaviorIndex=0;renderBehavior();showScreen("behavior-screen");});

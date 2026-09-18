@@ -15,6 +15,34 @@ function isUuid(value) {
     && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
 }
 
+function completionCode() {
+  const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  const part = () => Array.from(crypto.getRandomValues(new Uint8Array(4)), (value) => alphabet[value % alphabet.length]).join("");
+  return `DSLQ-${part()}-${part()}`;
+}
+
+async function saveCompletion(request, env) {
+  let payload;
+  try {
+    payload = await request.json();
+  } catch {
+    return json({ error: "Invalid JSON." }, 400);
+  }
+  if (payload?.classKey !== "monique") return json({ error: "Unknown class." }, 400);
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    const code = completionCode();
+    try {
+      const saved = await env.DB.prepare(
+        "INSERT OR IGNORE INTO completion_codes (completion_code, class_key) VALUES (?, ?)",
+      ).bind(code, payload.classKey).run();
+      if (saved.meta?.changes === 1) return json({ saved: true, code });
+    } catch {
+      return json({ error: "The completion code could not be saved." }, 503);
+    }
+  }
+  return json({ error: "The completion code could not be generated." }, 503);
+}
+
 function safeDemographics(value) {
   if (!value || typeof value !== "object" || Array.isArray(value)) return {};
   const allowed = ["dog_name", "dog_age_years", "dog_age_months", "dog_lives_with_you", "dog_sex", "dog_neuter_status", "dog_breed", "dog_weight", "dogs_in_household", "other_animals", "other_animals_text"];
@@ -80,6 +108,7 @@ export default {
       }
     }
     if (url.pathname === "/api/sessions" && request.method === "POST") return saveSession(request, env);
+    if (url.pathname === "/api/completions" && request.method === "POST") return saveCompletion(request, env);
     if (url.pathname.startsWith("/api/")) return json({ error: "Not found." }, 404);
     return env.ASSETS.fetch(request);
   },
