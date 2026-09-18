@@ -5,6 +5,20 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [3.0.0] — 2026-09-18
+
+### Added
+- Cloudflare Worker and Static Assets deployment.
+- Dedicated Cloudflare D1 database for consented research responses.
+- Server-side answer validation and score recalculation.
+- Responsive, accessible browser interface and Node scoring tests.
+
+### Changed
+- Production runtime moved from Streamlit to Cloudflare.
+- Production research storage moved from Supabase to Cloudflare D1.
+- Consent flow now makes the save/no-save choice explicit while showing results in either case.
+- Documentation updated for the Cloudflare architecture.
+
 ## [2.1.0] — 2026-04-14
 
 ### Added
