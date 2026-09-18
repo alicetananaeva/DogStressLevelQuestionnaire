@@ -72,6 +72,17 @@ pnpm run deploy
 
 The earlier Streamlit/Supabase implementation remains in `dslq_app.py` as a reference and rollback option; it is not used by the Cloudflare deployment.
 
+### Historical Supabase records
+
+Export the old `dslq_sessions` table as a JSON array, then prepare an idempotent D1 import file:
+
+```bash
+pnpm run supabase:prepare -- supabase-dslq-export.json > dslq-d1-import.sql
+pnpm exec wrangler d1 execute dslq_research --remote --file dslq-d1-import.sql
+```
+
+The converter imports only rows with research consent, preserves existing session IDs and timestamps, and uses `INSERT OR IGNORE` so rerunning the same import does not duplicate responses. Export and generated import files may contain participant data and must not be committed.
+
 ## Project structure
 
 ```text
