@@ -18,23 +18,18 @@
 
   <main id="app">
     <section id="intro-screen" class="screen hero" tabindex="-1">
-      <div class="eyebrow">Chronic stress screening · about 10–15 minutes</div>
-      <h1>Notice the patterns your dog cannot explain.</h1>
-      <p class="lead">The DSLQ asks about behavioral and health-related signs that may be associated with chronic stress. Answer for one dog, as honestly and accurately as possible.</p>
-      <div class="notice"><strong>Important:</strong> For behavior items, choose “Yes” even if you observe the behavior only occasionally. Follow-up questions will ask about frequency and duration.</div>
-      <div class="feature-grid">
-        <div class="feature"><strong>37 behavior items</strong><span>Plus a brief general-health module</span></div>
-        <div class="feature"><strong>Immediate result</strong><span>Compared with a 149-dog reference sample</span></div>
-        <div class="feature"><strong>Private by default</strong><span>Research storage is always optional</span></div>
-      </div>
+      <h1>Dog Stress Level Questionnaire (DSLQ)</h1>
+      <p class="lead">This questionnaire asks about behavioral signs that may be associated with chronic stress in your dog. Please answer as honestly and accurately as possible. There are no “good” or “bad” answers. Your result will be shown only to you. At the end, we will ask separately whether you would like to share your answers for research purposes.</p>
+      <p><strong>Most people complete this questionnaire in about 10-15 minutes.</strong></p>
+      <p><strong>If you live with more than one dog, please choose one dog and answer for that dog only.</strong></p>
+      <div class="notice"><strong>Important:</strong> for behavior items, please choose “Yes” even if you observe the behavior only occasionally. If you choose “Yes”, you will usually be asked about frequency and duration.</div>
       <button id="start-button" class="button primary">Start questionnaire →</button>
-      <p class="fine-print">This tool is a screening aid and does not provide a clinical diagnosis.</p>
     </section>
 
     <section id="sex-screen" class="screen narrow hidden" tabindex="-1">
       <div class="eyebrow">Before we begin</div>
-      <h1>What is your dog’s sex?</h1>
-      <p>This allows us to show only relevant health questions.</p>
+      <h1>Before we begin — what is your dog’s sex?</h1>
+      <p>This helps us show only relevant questions.</p>
       <fieldset id="sex-options" class="choice-list">
         <legend class="sr-only">Dog sex</legend>
         <label><input type="radio" name="dog-sex" value="Male"><span>Male</span></label>
@@ -74,12 +69,12 @@
     <section id="consent-screen" class="screen narrow hidden" tabindex="-1">
       <div class="eyebrow">Optional research contribution</div>
       <h1>Would you like to share your responses?</h1>
-      <p>Your result does not depend on this choice. If you agree, your questionnaire responses and optional dog information will be stored for future research on pet well-being, behavior, and human–animal interactions.</p>
-      <div class="privacy-card"><h2>Research data consent</h2><ul><li>Published results will be aggregate or de-identified.</li><li>You may skip every optional dog-information field.</li><li>No human demographics or contact information are requested.</li></ul></div>
+      <p>You are not required to share your responses to receive your result. If you choose to share data, the information you select may be stored securely and used for future research on pet well-being, behavior, and human-animal interactions.</p>
+      <div class="privacy-card"><h2>Optional Research Data Consent</h2><p>You are not required to share your answers or dog information to receive your result. If you choose to share data, the information you select may be stored securely and used for future research on pet well-being, behavior, and human-animal interactions. Published results will be reported only in aggregate or de-identified form. You may skip any optional questions you do not wish to answer.</p></div>
       <fieldset id="consent-options" class="choice-list">
         <legend class="sr-only">Research data sharing choice</legend>
-        <label><input type="radio" name="consent" value="yes"><span><strong>Yes, share my responses for research</strong><small>I voluntarily agree to storage and future research use.</small></span></label>
-        <label><input type="radio" name="consent" value="no"><span><strong>No, do not save my responses</strong><small>I will still receive the same result.</small></span></label>
+        <label><input type="radio" name="consent" value="yes"><span><strong>I agree to share my questionnaire responses and information about my dog for future research on pet well-being, behavior, and human-animal interactions.</strong></span></label>
+        <label><input type="radio" name="consent" value="no"><span><strong>No, I do not want to share my data.</strong></span></label>
       </fieldset>
       <p id="consent-error" class="error hidden" role="alert">Please select one option.</p>
       <div class="button-row"><button id="consent-back" class="button secondary">← Back</button><button id="consent-next" class="button primary">Continue →</button></div>
@@ -111,7 +106,7 @@
       <article class="scale-card"><div class="scale-title"><strong>Stress level scale</strong><span id="scale-value"></span></div><div class="stress-scale"><div class="zone normal"></div><div class="zone elevated"></div><div class="zone high"></div><span id="scale-marker" class="scale-marker" aria-hidden="true">●</span></div><div class="scale-labels"><span>Normal</span><span>Elevated</span><span>High</span></div></article>
       <article id="health-result" class="health-card hidden"><h2>Health-related signs</h2><div id="health-copy"></div></article>
       <p class="disclaimer"><em>This tool is intended as a screening aid and does not provide a clinical diagnosis.</em></p>
-      <div class="credit"><p>The Dog Stress Level Questionnaire was developed and validated by Alisa Tananaeva under the supervision of Dr. Monique Udell at the Human-Animal Interaction Lab, Oregon State University.</p><p><a href="https://www.alicetananaeva.com" target="_blank" rel="noopener">Learn more or collaborate →</a></p></div>
+      <div class="credit"><p>The Dog Stress Level Questionnaire was developed and validated by Alisa Tananaeva under the supervision of Dr. Monique Udell at the Human-Animal Interaction Lab, Oregon State University.</p><p><a href="https://dogperspective.com" target="_blank" rel="noopener">Learn more or collaborate →</a></p></div>
       <button id="restart-button" class="button secondary">Start over</button>
     </section>
   </main>
