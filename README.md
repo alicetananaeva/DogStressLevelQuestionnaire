@@ -6,7 +6,7 @@ The web application administers the questionnaire, calculates the chronic stress
 
 ## Live app
 
-[Open DSLQ on Cloudflare](https://dslq-questionnaire.alicetananaeva.workers.dev/)
+[Open DSLQ on Cloudflare](https://dslq.dogperspective.com/)
 
 ## Current architecture
 
