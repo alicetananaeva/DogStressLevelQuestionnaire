@@ -1,4 +1,4 @@
-export const APP_VERSION = "dslq-cloudflare-4.2.0";
+export const APP_VERSION = "dslq-cloudflare-4.2.1";
 
 export const BEHAVIOR_ITEMS = [
   { number: 1, key: "Stereotypic", type: "symptom", text: "My dog has engaged in stereotypic (repetitive) movements for 10 minutes or more at a time. For example, chasing their own tail, pacing back and forth or wandering in circles, excessive licking or sucking on toys or other objects (outside of play), excessive grooming that leaves wounds on skin, or something similar." },
