@@ -8,9 +8,9 @@ The web application administers the questionnaire, calculates the chronic stress
 
 [Open DSLQ on Cloudflare](https://dslq.dogperspective.com/)
 
-Class link for Dr. Udell's students: [DSLQ class version](https://dslq.dogperspective.com/?class=drudell). Consented questionnaire records receive the cohort label `drudell_fall_2026`. After viewing the result, students complete three required anonymous feedback ratings and receive a random confirmation code. Feedback, completion codes, and questionnaire responses are stored separately and cannot be linked to one another.
+Class link for Dr. Udell's students: [DSLQ class version](https://dslq.dogperspective.com/?class=drudell). After viewing the result, students complete three required anonymous feedback ratings and receive a random participant code. Feedback is always stored with that code. When a student consents to research storage, the questionnaire score receives the cohort label `drudell_fall_2026` and is linked to the same code. When a student declines, the score field remains blank and no questionnaire response is stored.
 
-Dr. Udell can verify PPS and DSLQ completion codes at [verify.dogperspective.com](https://verify.dogperspective.com/). The page reports only whether a code is valid and which questionnaire it belongs to.
+The access-key-protected class dashboard at [verify.dogperspective.com](https://verify.dogperspective.com/) lists both surveys by participant code, shows consent status, scores and the three feedback ratings, and can download the table as CSV. It does not show names or narrative result interpretations.
 
 ## Current architecture
 
@@ -34,7 +34,7 @@ This deployment does not depend on Streamlit uptime or Supabase project activity
 
 ## Data storage
 
-The `dslq_sessions` D1 table stores consented research records: a random session ID, score and interpretation, item scores, behavioral and health answers, optional dog information, and an optional cohort label. No research record is created when a participant declines research storage. Class feedback is stored in `class_feedback`; confirmation codes are stored in `completion_codes`. Neither can be linked to questionnaire responses.
+The `dslq_sessions` D1 table stores consented research records: a random session ID, score and interpretation, item scores, behavioral and health answers, optional dog information, and an optional cohort label. No research record is created when a participant declines research storage. Class feedback is stored in `class_feedback`; participant codes are stored in `completion_codes`. In the Dr. Udell class version, the participant code links feedback to a consented score. It is not linked to a person's identity unless the participant independently chooses to share the code.
 
 See [DATA_PRIVACY.md](DATA_PRIVACY.md) for details.
 
