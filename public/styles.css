@@ -50,7 +50,7 @@ input:not([type=radio]),select { width:100%;min-height:48px;padding:10px 13px;bo
 .feedback-card { padding:24px;margin:0 0 18px;border:1px solid var(--line);border-radius:20px;background:rgba(255,255,255,.94); }
 .feedback-card h2 { margin:7px 0 8px; }.feedback-card>p { color:var(--muted); }
 .feedback-grid { display:grid;gap:16px;margin:22px 0; }.feedback-grid label { display:grid;gap:7px;font-weight:600; }
-.feedback-grid select { width:100%;min-height:48px;padding:9px 12px;border:1px solid #b9c7cd;border-radius:10px;background:#fff;color:var(--ink);font:inherit; }
+.feedback-grid select, .feedback-grid input { width:100%;min-height:48px;padding:9px 12px;border:1px solid #b9c7cd;border-radius:10px;background:#fff;color:var(--ink);font:inherit; }
 .completion-card { display:flex;align-items:center;justify-content:space-between;gap:24px;padding:20px 24px;margin:0 0 18px;border:1px solid #c9dce4;border-radius:18px;background:#edf7fa; }
 .completion-card p { margin:5px 0 0;color:var(--muted); }
 .completion-card code { flex:0 0 auto;padding:10px 14px;border-radius:10px;background:#fff;border:1px solid var(--line);font-size:20px;font-weight:700;letter-spacing:.08em;color:var(--blue-dark); }

@@ -23,6 +23,42 @@ function validRating(value) {
   return Number.isInteger(value) && value >= 1 && value <= 5;
 }
 
+function validName(value, required = true) {
+  return typeof value === "string" && (!required || value.trim().length > 0)
+    && value.trim().length <= 120 && !/[\x00-\x1f\x7f]/.test(value);
+}
+
+async function saveClassSubmission(request, env) {
+  if (Number(request.headers.get("content-length") || 0) > 128_000) return json({ error: "Request is too large." }, 413);
+  let payload;
+  try { payload = await request.json(); } catch { return json({ error: "Invalid JSON." }, 400); }
+  if (payload?.classKey !== "drudell") return json({ error: "Unknown class." }, 400);
+  if (!isUuid(payload.submissionId) || !validName(payload.studentName)
+    || !validName(payload.dogName || "", false)
+    || !validRating(payload.enjoyment) || !validRating(payload.clarity)
+    || !validRating(payload.resultUsefulness)
+    || !validateDslq(payload.dogSex, payload.behaviorAnswers, payload.healthDurations)) {
+    return json({ error: "Incomplete class submission." }, 400);
+  }
+  const result = calculateDslq(payload.dogSex, payload.behaviorAnswers, payload.healthDurations);
+  const demographics = safeDemographics(payload.dogDemographics);
+  try {
+    const saved = await env.DB.prepare(`
+      INSERT OR IGNORE INTO class_submissions (
+        submission_id, cohort_key, student_name, dog_name, dog_sex,
+        behavior_answers_json, health_durations_json, dog_demographics_json,
+        chronic_score, interpretation_band, overall_experience, clarity, result_usefulness
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).bind(payload.submissionId, "drudell_fall_2026", payload.studentName.trim(),
+      (payload.dogName || "").trim() || null, payload.dogSex, JSON.stringify(payload.behaviorAnswers),
+      JSON.stringify(payload.healthDurations), JSON.stringify(demographics), result.total,
+      result.band, payload.enjoyment, payload.clarity, payload.resultUsefulness).run();
+    return json({ saved: true, duplicate: saved.meta?.changes === 0 });
+  } catch {
+    return json({ error: "The class submission could not be saved." }, 503);
+  }
+}
+
 function completionCode() {
   const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   const part = () => Array.from(crypto.getRandomValues(new Uint8Array(4)), (value) => alphabet[value % alphabet.length]).join("");
@@ -209,6 +245,7 @@ async function saveSession(request, env) {
     return json({ error: "Invalid JSON." }, 400);
   }
   if (payload?.consent !== true) return json({ error: "Research consent is required for storage." }, 400);
+  if (payload.classKey === "drudell") return json({ error: "Class responses must use the class submission route." }, 400);
   if (!isUuid(payload.sessionId)) return json({ error: "Invalid session identifier." }, 400);
   if (!validateDslq(payload.dogSex, payload.behaviorAnswers, payload.healthDurations)) return json({ error: "Invalid questionnaire answers." }, 400);
 
@@ -260,9 +297,10 @@ export default {
       }
     }
     if (url.pathname === "/api/sessions" && request.method === "POST") return saveSession(request, env);
+    if (url.pathname === "/api/class-submissions" && request.method === "POST") return saveClassSubmission(request, env);
     if (url.pathname === "/api/completions" && request.method === "POST") return saveCompletion(request, env);
     if (url.pathname === "/api/feedback" && request.method === "POST") return saveFeedback(request, env);
-    if (url.pathname === "/api/pilot" && request.method === "POST") return savePilot(request, env);
+    if (url.pathname === "/api/pilot" && request.method === "POST") return json({ error: "This class submission route has been retired. Please refresh the questionnaire." }, 410);
     if (url.pathname.startsWith("/api/")) return json({ error: "Not found." }, 404);
     return env.ASSETS.fetch(request);
   },

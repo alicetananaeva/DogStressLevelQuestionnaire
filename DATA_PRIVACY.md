@@ -4,7 +4,7 @@
 
 Participants can complete DSLQ and receive the same result whether they agree to research storage or decline. A response is sent to the storage API only after an explicit **Yes, share my responses for research** choice.
 
-The Dr. Udell class version also asks three required experience questions after showing the result. These ratings are stored regardless of the research-storage choice and are assigned a random internal participant code. If the participant consents to research storage, the same code links the feedback to the questionnaire score within DSLQ. The code is not shown to participants or linked to a student name or contact detail. PPS and DSLQ assign separate codes; there is no built-in cross-survey linkage.
+The Dr. Udell class version (`?class=drudell`) is a separate instructional pilot. It does **not** show the research-consent question or write to `dslq_sessions`. Before the questionnaire, it asks for the student's name (required) and dog's name (optional). At the end, it stores all behavioral and health answers, optional dog information, the calculated score, and three required experience ratings together in `class_submissions`. The protected class dashboard shows names and full answers. Students should use the same name in PPS and DSLQ to make cross-survey matching possible. These identifiable class records are not consented research data and must not be copied into the research tables or used for publishable research without the appropriate institutional review and permissions.
 
 ## Data stored with consent
 
@@ -15,11 +15,10 @@ The Dr. Udell class version also asks three required experience questions after 
 - Calculated score, interpretation band, health flag, and item scores
 - Optional dog information entered after consent, such as name, age, breed, weight range, neuter status, and household animals
 - The application version used for scoring
-- A cohort label for consented responses submitted through the Dr. Udell class link
 
 These records are stored in the `dslq_sessions` table in Cloudflare D1.
 
-## Data not requested by the app
+## Data not requested by the public app
 
 - Human demographics
 - Human name, email address, or other contact information
@@ -33,7 +32,7 @@ Cloudflare necessarily processes normal request metadata to deliver and protect 
 
 When a participant chooses not to share, the result is calculated in the browser and no questionnaire or dog-information record is written to D1.
 
-Class feedback is stored in `class_feedback`, and participant codes are stored in `completion_codes`. For the Dr. Udell class pilot, both tables contain the random participant code. A consented record in `dslq_sessions` contains that same code; when consent is declined, no questionnaire or dog-information record is created and only the code plus the three feedback ratings are retained.
+The public version does not store a questionnaire record after declined consent. The class version has a different notice and storage path described above. Legacy coded class records created before this change remain in `class_feedback` and `completion_codes`; they are not silently reassigned to named students.
 
 ## Research context
 
