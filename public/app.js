@@ -3,7 +3,7 @@ import { APP_VERSION, BEHAVIOR_ITEMS, DAYS_OPTIONS, DURATION_OPTIONS, FREQUENCY_
 const screens = [...document.querySelectorAll(".screen")];
 const state = { sessionId: crypto.randomUUID(), feedbackId: crypto.randomUUID(), studentName: "", dogName: "", dogSex: "", behaviorAnswers: {}, behaviorIndex: 0, healthDurations: {}, healthIndex: 0, consent: false, dogDemographics: {} };
 const classKey = new URLSearchParams(window.location.search).get("class");
-if(classKey==="drudell"){document.getElementById("class-pilot-note").classList.remove("hidden");document.getElementById("public-sharing-note").classList.add("hidden");document.getElementById("dog-name").closest(".field").classList.add("hidden");}
+if(classKey==="drudell"){document.getElementById("public-sharing-note").classList.add("hidden");document.getElementById("dog-name").closest(".field").classList.add("hidden");}
 
 const BAND_LABELS = { normal:"Normal", elevated:"Elevated", high:"High", ultra_high:"Extremely High" };
 const BAND_COPY = {
